@@ -1,6 +1,7 @@
 import { Page } from 'puppeteer'
 import { PostDB } from './post-db.js'
 import { reviewSocialPost, type Category } from './social-post-reviewer.js'
+import { focusBrowserTab } from './social-media-utils.js'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
@@ -115,6 +116,9 @@ export async function gatherAndStorePosts(
       }
 
       console.log(`📱 Gathering ${numPosts} posts from ${platform}...`)
+
+      // Bring the page to the front and ensure it's focused
+      await focusBrowserTab(page, platform)
 
       // Capture screenshots using existing utility
       const capturedFiles = await capturePostScreenshots(page, platformDir, numPosts, platform)

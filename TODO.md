@@ -25,7 +25,7 @@
 [x] only include in DB if categorized and include category in db, allow querying based on hat
 [x] web app for scrolling through content
 [x] allow runnning dev on a specific dir to look at prior browses
-[] need to change tabs in browser when starting to read that one
+[x] need to change tabs in browser when starting to read that one
 [] have linkedin scroll so top of target node is at 60px from top
 [] clean up ui a bit
 [] use the likes and dislikes in filtering
