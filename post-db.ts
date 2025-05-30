@@ -133,6 +133,7 @@ export class PostDB {
     platformUniqueId?: string,
     contentHash?: string,
   ): boolean {
+    this.loadDB()
     return this.data.posts.some((post) => {
       // First check platform-specific unique ID (most reliable)
       if (platformUniqueId && post.platformUniqueId) {
@@ -162,6 +163,7 @@ export class PostDB {
     contentHash?: string,
     category?: string,
   ): string | null {
+    this.loadDB()
     // Check for duplicates
     if (this.postExists(description, screenshotPath, platformUniqueId, contentHash)) {
       console.log('Post already exists, skipping duplicate')
@@ -193,6 +195,7 @@ export class PostDB {
    * Update the rating of a post
    */
   updateRating(postId: string, rating: number): boolean {
+    this.loadDB()
     const post = this.data.posts.find((p) => p.id === postId)
     if (!post) {
       return false
@@ -207,6 +210,7 @@ export class PostDB {
    * Get posts with pagination around the current index
    */
   getPosts(pageSize: number = 10, offsetFromCurrent: number = 0): PaginatedResult {
+    this.loadDB()
     const totalPosts = this.data.posts.length
 
     if (totalPosts === 0) {
@@ -251,6 +255,7 @@ export class PostDB {
    * Move to a specific post index
    */
   goToIndex(index: number): boolean {
+    this.loadDB()
     if (index < 0 || index >= this.data.posts.length) {
       return false
     }
@@ -264,6 +269,7 @@ export class PostDB {
    * Move forward in the feed
    */
   moveForward(steps: number = 1): boolean {
+    this.loadDB()
     const newIndex = Math.min(this.data.currentIndex + steps, this.data.posts.length - 1)
     if (newIndex === this.data.currentIndex) {
       return false // Already at the end
@@ -278,6 +284,7 @@ export class PostDB {
    * Move backward in the feed
    */
   moveBackward(steps: number = 1): boolean {
+    this.loadDB()
     const newIndex = Math.max(this.data.currentIndex - steps, 0)
     if (newIndex === this.data.currentIndex) {
       return false // Already at the beginning
@@ -292,6 +299,7 @@ export class PostDB {
    * Get current position info
    */
   getCurrentPosition(): { currentIndex: number; totalPosts: number } {
+    this.loadDB()
     return {
       currentIndex: this.data.currentIndex,
       totalPosts: this.data.posts.length,
@@ -302,6 +310,7 @@ export class PostDB {
    * Get a specific post by ID
    */
   getPost(postId: string): Post | null {
+    this.loadDB()
     return this.data.posts.find((p) => p.id === postId) || null
   }
 
@@ -309,6 +318,7 @@ export class PostDB {
    * Get all posts (useful for admin/debugging)
    */
   getAllPosts(): Post[] {
+    this.loadDB()
     return [...this.data.posts].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
   }
 
@@ -316,6 +326,7 @@ export class PostDB {
    * Get posts by rating
    */
   getPostsByRating(rating: number): Post[] {
+    this.loadDB()
     return this.data.posts
       .filter((p) => p.rating === rating)
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
@@ -325,6 +336,7 @@ export class PostDB {
    * Get posts by platform
    */
   getPostsByPlatform(platform: string): Post[] {
+    this.loadDB()
     return this.data.posts
       .filter((p) => p.platform === platform)
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
@@ -334,6 +346,7 @@ export class PostDB {
    * Get posts by category
    */
   getPostsByCategory(category: string): Post[] {
+    this.loadDB()
     return this.data.posts
       .filter((p) => p.category === category)
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
@@ -343,6 +356,7 @@ export class PostDB {
    * Get all unique categories in the database
    */
   getAllCategories(): string[] {
+    this.loadDB()
     const categories = new Set(
       this.data.posts
         .map((p) => p.category)
@@ -359,6 +373,7 @@ export class PostDB {
     pageSize: number = 10,
     page: number = 0,
   ): PaginatedResult {
+    this.loadDB()
     const filteredPosts = this.data.posts
       .filter((p) => p.category === category)
       .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
@@ -389,6 +404,7 @@ export class PostDB {
     ratingBreakdown: Record<string, number>
     categoryBreakdown: Record<string, number>
   } {
+    this.loadDB()
     const totalPosts = this.data.posts.length
     const ratedPosts = this.data.posts.filter((p) => p.rating !== null).length
     const unratedPosts = totalPosts - ratedPosts
@@ -428,6 +444,7 @@ export class PostDB {
    * Delete a post by ID
    */
   deletePost(postId: string): boolean {
+    this.loadDB()
     const index = this.data.posts.findIndex((p) => p.id === postId)
     if (index === -1) {
       return false
@@ -448,6 +465,7 @@ export class PostDB {
    * Clear all posts (use with caution)
    */
   clearAll(): void {
+    this.loadDB()
     this.data.posts = []
     this.data.currentIndex = 0
     this.saveDB()

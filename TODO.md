@@ -29,7 +29,6 @@
 [x] clean up ui a bit
 [x] have linkedin scroll so top of target node is at 60px from top
 [x] handle images -> turned off expanding
-[] change prompt and category def to have "things I want in this category" and things I don't want
 [] use the likes and dislikes in filtering
   [] update ui
   [] hide when disliked
