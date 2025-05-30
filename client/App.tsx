@@ -30,6 +30,10 @@ function App() {
   const [hasMore, setHasMore] = useState(true)
   const [hasPrevious, setHasPrevious] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [selectedPlatform, setSelectedPlatform] = useState<string>('all')
+  const [availableCategories, setAvailableCategories] = useState<string[]>([])
+  const [availablePlatforms, setAvailablePlatforms] = useState<string[]>([])
   const observerRef = useRef<IntersectionObserver | null>(null)
   const loadingRef = useRef<HTMLDivElement>(null)
   const topLoadingRef = useRef<HTMLDivElement>(null)
@@ -43,7 +47,20 @@ function App() {
       setError(null)
 
       try {
-        const response = await fetch(`/api/posts?pageSize=10&offset=${offset}`)
+        const params = new URLSearchParams({
+          pageSize: '10',
+          offset: offset.toString(),
+        })
+
+        if (selectedCategory !== 'all') {
+          params.append('category', selectedCategory)
+        }
+
+        if (selectedPlatform !== 'all') {
+          params.append('platform', selectedPlatform)
+        }
+
+        const response = await fetch(`/api/posts?${params}`)
         if (!response.ok) throw new Error('Failed to fetch posts')
 
         const result: PaginatedResult = await response.json()
@@ -64,13 +81,34 @@ function App() {
         setLoading(false)
       }
     },
-    [loading],
+    [loading, selectedCategory, selectedPlatform],
   )
+
+  // Fetch available filter options
+  const fetchFilterOptions = useCallback(async () => {
+    try {
+      const response = await fetch('/api/posts/filters')
+      if (response.ok) {
+        const filters = await response.json()
+        setAvailableCategories(filters.categories || [])
+        setAvailablePlatforms(filters.platforms || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch filter options:', err)
+    }
+  }, [])
 
   // Load initial posts and current position
   useEffect(() => {
+    fetchFilterOptions()
+  }, [fetchFilterOptions])
+
+  useEffect(() => {
+    // Reset pagination when filters change
+    setCurrentIndex(0)
+    setPosts([])
     fetchPosts()
-  }, [])
+  }, [selectedCategory, selectedPlatform])
 
   // Update post rating
   const updateRating = useCallback(async (postId: string, rating: number) => {
@@ -89,6 +127,15 @@ function App() {
       setError(err instanceof Error ? err.message : 'Failed to update rating')
     }
   }, [])
+
+  // Handle filter changes
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category)
+  }
+
+  const handlePlatformChange = (platform: string) => {
+    setSelectedPlatform(platform)
+  }
 
   // Set up intersection observers for infinite scroll
   useEffect(() => {
@@ -165,9 +212,15 @@ function App() {
     // Platform icon mapping - replace with actual SVG icons
     const iconMap: { [key: string]: React.ReactElement } = {
       twitter: (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          {/* Twitter/X icon stub - replace with actual SVG path */}
-          <path d="M12 2L2 7v10c0 5.55 3.84 10 9 11 5.16-1 9-5.45 9-11V7l-10-5z" />
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          x="0px"
+          y="0px"
+          width="100"
+          height="100"
+          viewBox="0 0 50 50"
+        >
+          <path d="M 5.9199219 6 L 20.582031 27.375 L 6.2304688 44 L 9.4101562 44 L 21.986328 29.421875 L 31.986328 44 L 44 44 L 28.681641 21.669922 L 42.199219 6 L 39.029297 6 L 27.275391 19.617188 L 17.933594 6 L 5.9199219 6 z M 9.7167969 8 L 16.880859 8 L 40.203125 42 L 33.039062 42 L 9.7167969 8 z"></path>
         </svg>
       ),
       linkedin: (
@@ -219,14 +272,37 @@ function App() {
 
   return (
     <div className="app">
-      {/* <header className="header">
-        <h1>Social Media Feed</h1>
-        <div className="stats">
-          <span>
-            Position: {currentIndex + 1} / {totalPosts}
-          </span>
+      <header className="header">
+        <div className="header-content">
+          <h1 className="app-title">attn</h1>
+          <div className="filters">
+            <select
+              value={selectedCategory}
+              onChange={(e) => handleCategoryChange(e.target.value)}
+              className="filter-dropdown"
+            >
+              <option value="all">All Categories</option>
+              {availableCategories.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+            <select
+              value={selectedPlatform}
+              onChange={(e) => handlePlatformChange(e.target.value)}
+              className="filter-dropdown"
+            >
+              <option value="all">All Platforms</option>
+              {availablePlatforms.map((platform) => (
+                <option key={platform} value={platform}>
+                  {platform}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
-      </header> */}
+      </header>
 
       {error && (
         <div className="error">
