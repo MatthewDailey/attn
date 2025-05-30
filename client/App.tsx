@@ -212,7 +212,7 @@ function App() {
 
         {posts.length === 0 && (
           <div className="empty-state">
-            <p>No posts available. Start gathering some social media posts!</p>
+            <p>No posts available.</p>
           </div>
         )}
       </div>

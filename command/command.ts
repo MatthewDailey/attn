@@ -2,23 +2,17 @@
  * @fileoverview This file defines a command-line interface using yargs. It provides commands for social media authentication and browser automation.
  */
 
+import os from 'os'
+import path from 'path'
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
-import { SocialAuth } from '../social-auth.js'
-import { reviewSocialPost } from '../social-post-reviewer.js'
-import { gatherAndStorePosts } from '../social-post-gatherer.js'
 import { PostDB } from '../post-db.js'
-import type { Category } from '../social-post-reviewer.js'
-import path from 'path'
-import os from 'os'
-import { spawn, exec } from 'child_process'
+import { SocialAuth } from '../social-auth.js'
+import { gatherAndStorePosts } from '../social-post-gatherer.js'
 
 const socialAuth = new SocialAuth()
 
 yargs(hideBin(process.argv))
-  .command('hello', 'Say hello', {}, (argv) => {
-    console.log('Hello, world!')
-  })
   .command('login', 'Login to both LinkedIn and Twitter', {}, async (argv) => {
     try {
       await socialAuth.login()
@@ -56,75 +50,6 @@ yargs(hideBin(process.argv))
       process.exit(1)
     }
   })
-  .command(
-    'review-post <imagePath>',
-    'Review a social media post image using AI',
-    (yargs) => {
-      return yargs
-        .positional('imagePath', {
-          describe: 'Path to the image file to review',
-          type: 'string',
-          demandOption: true,
-        })
-        .option('categories', {
-          alias: 'c',
-          describe: 'Path to JSON file containing categories (optional)',
-          type: 'string',
-        })
-    },
-    async (argv) => {
-      try {
-        let categories: Category[] = [
-          {
-            name: 'AI Coding',
-            overview: 'Posts about AI coding tools, AI coding agents, and AI coding frameworks',
-            likedExamples: [],
-            dislikedExamples: [],
-          },
-          {
-            name: 'Programming and AI Memes',
-            overview: 'Programming and AI memes, jokes, and funny content',
-            likedExamples: [],
-            dislikedExamples: [],
-          },
-        ]
-
-        // Load custom categories if provided
-        if (argv.categories) {
-          try {
-            const fs = await import('fs')
-            const categoriesJson = fs.readFileSync(argv.categories, 'utf-8')
-            categories = JSON.parse(categoriesJson)
-            console.log(`📂 Loaded ${categories.length} custom categories from ${argv.categories}`)
-          } catch (error) {
-            console.warn(
-              `⚠️ Could not load categories from ${argv.categories}, using default categories`,
-            )
-          }
-        } else {
-          console.log('📋 Using default sample categories')
-        }
-
-        console.log('🔍 Analyzing image with AI...')
-        const result = await reviewSocialPost(argv.imagePath, categories)
-
-        console.log('\n📊 Analysis Results:')
-        console.log('='.repeat(50))
-        console.log('📝 Description:')
-        console.log(result.description)
-        console.log('\n🏷️ Category Match:')
-        if (result.categoryName) {
-          console.log(`✅ ${result.categoryName}`)
-        } else {
-          console.log('❌ No matching category found')
-        }
-        console.log('='.repeat(50))
-      } catch (error) {
-        console.error('❌ Failed to review post:', error)
-        process.exit(1)
-      }
-    },
-  )
   .command(
     'gather-posts',
     'Gather posts from both platforms and store them in the database',
@@ -239,233 +164,6 @@ yargs(hideBin(process.argv))
     },
   )
   .command(
-    'browse-and-serve [count]',
-    'Browse N posts from both platforms and start web server to view them',
-    (yargs) => {
-      return yargs
-        .positional('count', {
-          describe: 'Number of posts to gather from each platform',
-          type: 'number',
-          default: 10,
-        })
-        .option('categories', {
-          alias: 'C',
-          describe: 'Path to JSON file containing categories (optional)',
-          type: 'string',
-        })
-        .option('port', {
-          alias: 'p',
-          describe: 'Port for the web server',
-          type: 'number',
-          default: 8080,
-        })
-    },
-    async (argv) => {
-      try {
-        const loginStatus = socialAuth.isLoggedIn()
-
-        // Login to both platforms if needed
-        if (!loginStatus.linkedin) {
-          console.log('💼 Need to login to LinkedIn first...')
-          await socialAuth.login()
-        }
-        if (!loginStatus.twitter) {
-          console.log('📱 Need to login to Twitter first...')
-          await socialAuth.login()
-        }
-
-        // Generate unique session ID
-        const sessionId =
-          new Date().toISOString().replace(/[:.]/g, '-') +
-          '-' +
-          Math.random().toString(36).substr(2, 9)
-        console.log(`🆔 Starting session: ${sessionId}`)
-
-        // Create session directory structure
-        const sessionDir = path.join(os.homedir(), '.attn', 'tmp', sessionId)
-        const screenshotDir = path.join(sessionDir, 'screenshots')
-        const twitterScreenshotDir = path.join(screenshotDir, 'twitter')
-        const linkedinScreenshotDir = path.join(screenshotDir, 'linkedin')
-        const dbPath = path.join(sessionDir, 'posts.json')
-
-        // Create directories
-        console.log(`📁 Creating session directories in ${sessionDir}...`)
-        const fs = await import('fs')
-        fs.mkdirSync(twitterScreenshotDir, { recursive: true })
-        fs.mkdirSync(linkedinScreenshotDir, { recursive: true })
-
-        // Start browser with authenticated session
-        console.log('🌐 Starting browser with authenticated platforms...')
-        const pages = await socialAuth.startBrowser()
-
-        // Use the authenticated platforms to gather posts
-        await pages.withTwitter(async (twitterPage) => {
-          console.log('📱 Using authenticated Twitter page...')
-          const twitterTitle = await twitterPage.title()
-          console.log('Twitter page title:', twitterTitle)
-
-          await pages.withLinkedin(async (linkedinPage) => {
-            console.log('💼 Using authenticated LinkedIn page...')
-            const linkedinTitle = await linkedinPage.title()
-            console.log('LinkedIn page title:', linkedinTitle)
-
-            // Wait a moment for the pages to fully load
-            console.log('⏳ Waiting for pages to fully load...')
-            await new Promise((resolve) => setTimeout(resolve, 3000))
-
-            // Load custom categories if provided
-            let categories = undefined
-            if (argv.categories) {
-              try {
-                const categoriesJson = fs.readFileSync(argv.categories, 'utf-8')
-                categories = JSON.parse(categoriesJson)
-                console.log(
-                  `📂 Loaded ${categories.length} custom categories from ${argv.categories}`,
-                )
-              } catch (error) {
-                console.warn(
-                  `⚠️ Could not load categories from ${argv.categories}, using default categories`,
-                )
-              }
-            }
-
-            const numPostsToGather = argv.count
-
-            console.log(
-              `📸 Gathering ${numPostsToGather} posts from both platforms to ${screenshotDir}...`,
-            )
-
-            try {
-              const result = await gatherAndStorePosts(twitterPage, linkedinPage, {
-                numPosts: numPostsToGather,
-                screenshotDir,
-                dbPath,
-                categories,
-                platforms: ['twitter', 'linkedin'],
-              })
-
-              console.log('\n📊 Gathering Results:')
-              console.log('='.repeat(50))
-              console.log(`📸 Total posts captured: ${result.totalPostsGathered}`)
-              console.log(`💾 Total posts added to database: ${result.totalPostsAddedToDb}`)
-              console.log(`📁 Screenshots saved to: ${result.screenshotDir}`)
-              console.log(`🗃️ Database: ${dbPath}`)
-
-              for (const platformResult of result.platformResults) {
-                console.log(`\n${platformResult.platform.toUpperCase()}:`)
-                console.log(`  📸 Posts captured: ${platformResult.postsGathered}`)
-                console.log(`  💾 Posts added to DB: ${platformResult.postsAddedToDb}`)
-                if (platformResult.errors.length > 0) {
-                  console.log(`  ❌ Errors: ${platformResult.errors.length}`)
-                  platformResult.errors.forEach((error) => console.log(`    - ${error}`))
-                }
-              }
-              console.log('='.repeat(50))
-            } catch (error) {
-              console.warn('⚠️ Post gathering failed:', error)
-            }
-
-            console.log('✅ Posts gathering completed!')
-          })
-        })
-
-        // Now start the web server with the session database
-        console.log(`🚀 Starting API server on port ${argv.port}...`)
-
-        // Import and start the server
-        const { createApp } = await import('../server/app.js')
-
-        // Set environment variable to use the session database
-        process.env.ATTN_DB_PATH = dbPath
-
-        const app = await createApp()
-
-        let apiServerReady = false
-        let viteServerReady = false
-
-        // Function to open browser when both servers are ready
-        const tryOpenBrowser = () => {
-          if (apiServerReady && viteServerReady) {
-            console.log('🌐 Opening browser at http://localhost:3000...')
-            exec('open http://localhost:3000', (error) => {
-              if (error) {
-                console.warn('⚠️ Could not open browser automatically:', error.message)
-                console.log('👀 Please manually open http://localhost:3000 in your browser')
-              }
-            })
-          }
-        }
-
-        // Start API server
-        const server = app.listen(argv.port, () => {
-          console.log(`🌐 API server running at http://localhost:${argv.port}`)
-          console.log(`📊 Session ID: ${sessionId}`)
-          console.log(`📂 Database: ${dbPath}`)
-          apiServerReady = true
-          tryOpenBrowser()
-        })
-
-        // Start Vite dev server on port 3000
-        console.log('⚡ Starting Vite dev server on port 3000...')
-        const viteProcess = spawn('npx', ['vite', '--port', '3000'], {
-          stdio: ['inherit', 'pipe', 'pipe'],
-          env: { ...process.env, VITE_API_PORT: argv.port.toString() },
-        })
-
-        let viteStartupBuffer = ''
-        viteProcess.stdout?.on('data', (data) => {
-          const output = data.toString()
-          viteStartupBuffer += output
-          process.stdout.write(output)
-
-          // Check if Vite is ready
-          if (output.includes('Local:') && output.includes('localhost:3000')) {
-            viteServerReady = true
-            tryOpenBrowser()
-          }
-        })
-
-        viteProcess.stderr?.on('data', (data) => {
-          process.stderr.write(data)
-        })
-
-        viteProcess.on('close', (code) => {
-          console.log(`⚡ Vite process exited with code ${code}`)
-        })
-
-        // Handle graceful shutdown for both servers
-        const cleanup = () => {
-          console.log('\n🛑 Shutting down servers...')
-
-          // Close API server
-          server.close(() => {
-            console.log('✅ API server closed.')
-          })
-
-          // Kill Vite process
-          if (viteProcess && !viteProcess.killed) {
-            viteProcess.kill('SIGTERM')
-            console.log('✅ Vite server closed.')
-          }
-
-          process.exit(0)
-        }
-
-        process.on('SIGINT', cleanup)
-        process.on('SIGTERM', cleanup)
-
-        console.log('👀 Both servers starting... Browser will open automatically when ready!')
-        console.log('🛑 Press Ctrl+C to stop both servers')
-
-        // Keep the process alive
-        await new Promise(() => {})
-      } catch (error) {
-        console.error('❌ Failed to browse and serve:', error)
-        process.exit(1)
-      }
-    },
-  )
-  .command(
     'list-posts',
     'List posts from the database',
     (yargs) => {
@@ -522,6 +220,49 @@ yargs(hideBin(process.argv))
         })
       } catch (error) {
         console.error('❌ Failed to list posts:', error)
+        process.exit(1)
+      }
+    },
+  )
+  .command(
+    'clear-posts',
+    'Clear all posts from the database',
+    (yargs) => {
+      return yargs
+        .option('db-path', {
+          alias: 'd',
+          describe: 'Path to the database file',
+          type: 'string',
+          default: path.join(os.homedir(), '.attn', 'posts.json'),
+        })
+        .option('confirm', {
+          alias: 'y',
+          describe: 'Skip confirmation prompt',
+          type: 'boolean',
+          default: false,
+        })
+    },
+    async (argv) => {
+      try {
+        const postDB = new PostDB(argv.dbPath)
+        const stats = postDB.getStats()
+
+        if (stats.totalPosts === 0) {
+          console.log('📭 Database is already empty - no posts to clear.')
+          return
+        }
+
+        if (!argv.confirm) {
+          console.log(`⚠️  Warning: This will permanently delete ${stats.totalPosts} posts from the database.`)
+          console.log(`📂 Database path: ${argv.dbPath}`)
+          console.log('Use --confirm or -y to skip this prompt.')
+          process.exit(0)
+        }
+
+        postDB.clearAll()
+        console.log(`🗑️  Successfully cleared ${stats.totalPosts} posts from the database.`)
+      } catch (error) {
+        console.error('❌ Failed to clear posts:', error)
         process.exit(1)
       }
     },
