@@ -118,7 +118,6 @@ body {
 
 .feed {
   padding: 0;
-  padding-top: 48px; /* Account for fixed header */
 }
 
 .loading-indicator {
@@ -210,9 +209,10 @@ body {
   transition: transform 0.2s ease;
 }
 
-/* .screenshot:hover {
-  transform: scale(1.02);
-} */
+.screenshot:hover {
+  transform: scale(1.01);
+  cursor: pointer;
+}
 
 .post-actions {
   display: flex;

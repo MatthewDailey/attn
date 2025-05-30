@@ -26,7 +26,7 @@
 [x] web app for scrolling through content
 [x] allow runnning dev on a specific dir to look at prior browses
 [x] need to change tabs in browser when starting to read that one
-[] clean up ui a bit
+[x] clean up ui a bit
 [] have linkedin scroll so top of target node is at 60px from top
 [] use the likes and dislikes in filtering
 [] change prompt and category def to have "things I want in this category" and things I don't want
