@@ -6,9 +6,6 @@ import { resolve } from 'path'
 import { defineConfig } from 'vitest/config'
 
 let root = process.cwd()
-if (!root.endsWith('ref-tools')) {
-  root = resolve(root, 'ref-tools')
-}
 
 export default defineConfig({
   root,

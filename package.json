@@ -7,7 +7,7 @@
     "dev": "tsx watch server/index.ts",
     "cli": "tsx command/command.ts",
     "deploy": "railway up",
-    "test": "vitest",
+    "test": "vitest run",
     "format": "prettier --write .",
     "check": "tsc --noEmit",
     "pre-commit": "npm run check"

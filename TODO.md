@@ -16,18 +16,15 @@
 [x] fn to scroll and gather posts from linkedin scrollAndGatherLinkedin(page)
   - text inside div with data-id="urn:li:activity:7333910771602530322"
   - refactored with shared logic in social-media-utils.ts for extensibility
-[] local postdb (description, imageUrl, timestamp, rating) with 'list'
 [x] agent to evaluate posts
   - could categorize (eg have /default /programming-memes)
+[x] local postdb (description, imageUrl, timestamp, rating) with 'list'
 [] loop to 
 [] onboarding ux
   [] ensure API key is present
   [] do an initial scroll and open the home page
   [] 
 
-
-
-```
 its okay if there are no interesting posts
 
 thing i like:
@@ -41,8 +38,6 @@ things i don't like:
 - job updates
 - recruiting posts
 - political content
-```
-
 
 twitter
 - text inside  tag

@@ -1,0 +1,15 @@
+{
+  "posts": [
+    {
+      "id": "Example_post_about_a_new_AI_coding_tool_that_helps_1748607158323",
+      "description": "Example post about a new AI coding tool that helps with debugging",
+      "imageUrl": "./screenshots/example.png",
+      "timestamp": "2025-05-30T12:12:38.323Z",
+      "rating": 8,
+      "platform": "twitter",
+      "originalPostId": "tweet_123456"
+    }
+  ],
+  "currentIndex": 0,
+  "version": "1.0.0"
+}
