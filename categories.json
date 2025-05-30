@@ -3,7 +3,10 @@
     "name": "AI Coding",
     "overview": "Posts about AI coding tools, AI coding agents, and AI coding frameworks. Any new tool or model or launch I want to findout about.",
     "likedExamples": [],
-    "dislikedExamples": []
+    "dislikedExamples": [
+      "The social media post is a screenshot of a tweet by Greg Isenberg. The tweet text states: \"I just went on My First Million and showed how to replace a developer, designer, marketer, researcher, and product manager with AI agents for under $500 (copy my workflow in 55 minutes)\". The image includes a video thumbnail of Greg Isenberg speaking, presumably from the 'My First Million' podcast or show, with the show's logo and a timestamp of 55:00 visible. The post promotes a method using AI agents to perform tasks traditionally done by various professionals, including developers, in a cost-effective and time-efficient manner.",
+      "The social media post is an advertisement for 'Writer - Enterprise AI'. The image features a bright green background with the text 'WRITER Enterprise AI' and 'The fastest way to build AI apps'. It highlights key features like 'LLMs', 'Graph-based RAG', and 'AI guardrails' in purple callouts. A Python code snippet demonstrating the use of 'writerai' is also visible. The accompanying text reads: 'Build and deploy generative AI apps quickly and easily with a suite of developer tools fully integrated with our platform of LLMs, graph-based RAG tools, AI guardrails, and more.' The post encourages users to 'Get started for free!' via writer.com and includes a 'Learn more' button. It's a promotional post about a platform for developing AI applications."
+    ]
   },
   {
     "name": "Programming and AI Memes",

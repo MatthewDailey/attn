@@ -1,32 +1,29 @@
-# Social Media Feed Application
+# Attn
 
-A modern web application for browsing and rating social media posts with infinite scroll, persistent position, and category-based filtering.
+An agent to protect your attention by helping you browse and rate social media posts with AI-powered categorization.
 
-## Features
+## Overview
 
-### 🎯 Feed Interface
+Attn gathers posts from Twitter and LinkedIn, takes screenshots, categorizes them using AI, and provides a web interface to browse and rate them. It helps you be more intentional about your social media consumption.
 
-- **Infinite Scroll**: Seamlessly browse posts with automatic loading
-- **Bidirectional Navigation**: Scroll up to load previous posts, down for newer ones
-- **Persistent Position**: Maintains your position when refreshing the page
-- **Rating System**: Thumbs up/down rating for each post with instant feedback
-- **Modern UI**: Clean, responsive design optimized for mobile and desktop
+## Prerequisites
 
-### 📊 Post Management
+- Node.js (v18 or higher)
+- Chrome/Chromium browser
 
-- **Category-Based Filtering**: AI-categorized posts for better organization
-- **Platform Support**: Twitter, LinkedIn, and other social media platforms
-- **Screenshot Integration**: View original post screenshots
-- **Metadata Display**: Platform, timestamp, and category information
+## Environment Variables
 
-### 🔧 Technical Features
+Create a `.env` file in the root directory:
 
-- **Real-time Updates**: Rating changes are immediately reflected in the UI
-- **Error Handling**: Graceful error handling with user-friendly messages
-- **Performance Optimized**: Efficient pagination and lazy loading
-- **TypeScript**: Full type safety throughout the application
+```bash
+# Required for AI categorization
+GOOGLE_GENERATIVE_AI_API_KEY=your_gemini_api_key_here
 
-## Quick Start
+# Required for ngrok tunneling (get from ngrok.com)
+NGROK_AUTHTOKEN=your_ngrok_token_here
+```
+
+## Getting Started
 
 ### 1. Install Dependencies
 
@@ -34,229 +31,69 @@ A modern web application for browsing and rating social media posts with infinit
 npm install
 ```
 
-### 2. Add Sample Data
+### 2. Login to Social Platforms
 
 ```bash
-npm run demo
+npm run cli login
 ```
 
-### 3. Start the Application
+This will open browser windows for you to login to Twitter and LinkedIn. Your login sessions will be saved for future use.
+
+### 3. Gather Posts
 
 ```bash
-npm run dev
+npm run cli -- gather-posts --num 20
 ```
 
-The application will be available at:
+This will:
+- Gather 20 posts from both Twitter and LinkedIn
+- Take screenshots of each post
+- Categorize posts using AI
+- Store everything in a local database
 
-- **Frontend**: http://localhost:3000 (Vite dev server)
-- **Backend API**: http://localhost:8080
-
-## One-Command Social Media Browsing
-
-### Browse and Serve Command
-
-The fastest way to get started with real social media content:
+### 4. Start the Application
 
 ```bash
-# Browse 10 posts from both Twitter and LinkedIn, then start web server
-npm run cli -- browse-and-serve
-
-# Browse 20 posts from each platform
-npm run cli -- browse-and-serve 20
-
-# Use custom port and categories
-npm run cli -- browse-and-serve 15 --port 3001 --categories ./my-categories.json
+npm start
 ```
 
-This command will:
+This starts:
+- Backend API server on port 8080
+- Frontend web app on port 3000
+- Ngrok tunnel for external access
 
-1. **Authenticate**: Login to Twitter and LinkedIn (if not already logged in)
-2. **Gather Posts**: Collect N posts from both platforms with screenshots
-3. **AI Analysis**: Analyze and categorize each post automatically
-4. **Temporary Session**: Create a unique session under `~/.attn/tmp/<session-id>/`
-5. **Web Server**: Start a web server to browse and rate the posts
+Visit http://localhost:3000 to browse and rate your posts.
 
-### Session Structure
-
-Each session creates its own isolated environment:
-
-```
-~/.attn/tmp/<session-id>/
-├── posts.json                    # Session database
-└── screenshots/
-    ├── twitter/                  # Twitter post screenshots
-    │   ├── post_123.png
-    │   └── post_456.png
-    └── linkedin/                 # LinkedIn post screenshots
-        ├── post_789.png
-        └── post_abc.png
-```
-
-### Command Options
-
-- `count` - Number of posts to gather from each platform (default: 10)
-- `--port, -p` - Port for the web server (default: 8080)
-- `--categories, -C` - Path to custom categories JSON file
-
-## API Endpoints
-
-### Posts
-
-- `GET /api/posts?pageSize=10&offset=0` - Get paginated posts around current position
-- `GET /api/posts/:postId` - Get specific post by ID
-- `PUT /api/posts/:postId/rating` - Update post rating (1 for thumbs up, -1 for thumbs down)
-
-### Position Management
-
-- `GET /api/position` - Get current position in the feed
-- `PUT /api/position` - Update current position
-
-### Utilities
-
-- `GET /api/stats` - Get database statistics
-- `GET /api/screenshots/*` - Serve screenshot images
-- `GET /api/ping` - Health check
-
-## Usage
-
-### Browsing Posts
-
-1. **Scroll Down**: Load newer posts automatically
-2. **Scroll Up**: Load previous posts when available
-3. **Rate Posts**: Click 👍 or 👎 to rate posts
-4. **View Details**: See platform, timestamp, and category for each post
-
-### Rating System
-
-- **👍 Thumbs Up**: Rate post positively (value: 1)
-- **👎 Thumbs Down**: Rate post negatively (value: -1)
-- **No Rating**: Posts start unrated (value: null)
-
-### Persistent Experience
-
-- Your scroll position is saved when you refresh the page
-- The application remembers where you left off in the feed
-- Ratings are immediately saved to the database
-
-## Development
-
-### Project Structure
-
-```
-├── client/           # React frontend
-│   ├── App.tsx      # Main feed component
-│   ├── App.css      # Styling
-│   └── main.tsx     # Entry point
-├── server/          # Express backend
-│   ├── app.ts       # API routes and middleware
-│   └── index.ts     # Server startup
-├── post-db.ts       # Database layer
-├── demo-posts.ts    # Sample data generator
-└── vite.config.ts   # Build configuration
-```
-
-### Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run demo` - Add sample posts to database
-- `npm run test` - Run tests
-- `npm run format` - Format code with Prettier
-
-### Adding Real Data
-
-To add real social media posts, use the browse-and-serve command for the easiest experience:
+## CLI Commands
 
 ```bash
-# Quick start - browse and rate posts immediately
-npm run cli -- browse-and-serve
+# Check login status
+npm run cli -- status
 
-# Or use other post gathering tools
-npm run cli
+# Gather posts (default: 10 from each platform)
+npm run gather
+
+# Gather specific number of posts
+npm run gather -- --num 50
+
+# List posts in database
+npm run cli -- list-posts
+
+# Clear all posts
+npm run cli -- clear-posts --confirm
+
+# Logout from all platforms
+npm run cli -- logout
 ```
 
-## Database Schema
+## Data Storage
 
-### Post Interface
-
-```typescript
-interface Post {
-  id: string
-  description: string
-  timestamp: Date
-  rating: number | null // 1, -1, or null
-  platform?: string // 'twitter', 'linkedin', etc.
-  originalPostId?: string
-  platformUniqueId?: string
-  contentHash?: string
-  screenshotPath: string
-  category?: string // AI-assigned category
-}
+Posts and screenshots are stored in `~/.attn/`:
 ```
-
-### Pagination Response
-
-```typescript
-interface PaginatedResult {
-  posts: Post[]
-  currentIndex: number
-  totalPosts: number
-  hasMore: boolean
-  hasPrevious: boolean
-}
+~/.attn/
+├── posts.json              # Post database
+├── screenshots/            # Post screenshots
+│   ├── twitter/
+│   └── linkedin/
+└── categories.json         # AI categories (optional)
 ```
-
-## Configuration
-
-### Environment Variables
-
-- `PORT` - Server port (default: 8080)
-- `NODE_ENV` - Environment mode (development/production)
-
-### Database Location
-
-Posts are stored in `~/.attn/posts.json` by default.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Run `npm run format` and `npm run check`
-6. Submit a pull request
-
-## License
-
-MIT License - see LICENSE file for details.
-
----
-
-## Recent Updates
-
-### Feed Interface (Latest)
-
-- ✅ Complete React frontend with infinite scroll
-- ✅ Thumbs up/down rating system
-- ✅ Persistent scroll position
-- ✅ Responsive design for mobile and desktop
-- ✅ Real-time rating updates
-- ✅ Error handling and loading states
-
-### API Enhancements
-
-- ✅ RESTful API for post management
-- ✅ Position tracking and updates
-- ✅ Image serving for screenshots
-- ✅ Comprehensive error handling
-- ✅ CORS support for development
-
-### Category System
-
-- ✅ AI-based post categorization
-- ✅ Category filtering and statistics
-- ✅ Enhanced database schema
-- ✅ Backward compatibility
-
-For detailed information about category features, see [CATEGORY_CHANGES.md](CATEGORY_CHANGES.md).

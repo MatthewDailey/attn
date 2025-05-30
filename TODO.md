@@ -33,3 +33,12 @@
 [x] ngrok tunnel to view from phone (is there a JS package i can just include?)
 [x] try headless
 
+demo:
+- I'm matt, I'll demo Attention - an agent to protect your attention
+- we've all had moments where go on social media and wake up 5 10, 60 minutes later like what happened
+- we've also all found amazing useful information or connection as well.
+- As a human I prefer to limit social media as much as possible but as a founder I need to be up-to-date on my domain and participate in the discorse to get my product out there.
+- So i built "Attn" to do the mindless scrolling and filter out the content that matters to me.
+
+
+- this is a short hackathon version - a full implementaiton would run in the background so you'd be able to use, use native embeds etc

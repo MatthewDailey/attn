@@ -375,4 +375,116 @@ describe('PostDB', () => {
     expect(stats.categoryBreakdown['Programming and AI Memes']).toBe(1)
     expect(stats.categoryBreakdown['undefined']).toBeUndefined() // Uncategorized posts shouldn't appear
   })
+
+  test('should update categories.json when posts are rated', () => {
+    // Create a test categories.json file
+    const testCategories = [
+      {
+        name: 'AI Coding',
+        overview: 'Posts about AI coding tools and frameworks',
+        likedExamples: [],
+        dislikedExamples: [],
+      },
+      {
+        name: 'Programming Memes',
+        overview: 'Programming jokes and memes',
+        likedExamples: [],
+        dislikedExamples: [],
+      },
+    ]
+
+    // Write test categories file
+    fs.writeFileSync('./categories.json', JSON.stringify(testCategories, null, 2))
+
+    // Add posts with categories
+    const postId1 = db.addPost(
+      'Amazing new AI coding assistant that writes perfect code',
+      'img1.png',
+      null,
+      'twitter',
+      undefined,
+      undefined,
+      undefined,
+      'AI Coding',
+    )
+
+    const postId2 = db.addPost(
+      'Funny meme about debugging at 3am',
+      'img2.png',
+      null,
+      'twitter',
+      undefined,
+      undefined,
+      undefined,
+      'Programming Memes',
+    )
+
+    const postId3 = db.addPost(
+      'Another AI tool for better productivity',
+      'img3.png',
+      null,
+      'twitter',
+      undefined,
+      undefined,
+      undefined,
+      'AI Coding',
+    )
+
+    expect(postId1).toBeTruthy()
+    expect(postId2).toBeTruthy()
+    expect(postId3).toBeTruthy()
+
+    if (postId1 && postId2 && postId3) {
+      // Rate posts positively and negatively
+      db.updateRating(postId1, 1) // Like AI coding post
+      db.updateRating(postId2, -1) // Dislike meme post
+      db.updateRating(postId3, 1) // Like another AI coding post
+
+      // Check categories.json was updated
+      const updatedCategories = JSON.parse(fs.readFileSync('./categories.json', 'utf-8'))
+
+      const aiCodingCategory = updatedCategories.find((c: any) => c.name === 'AI Coding')
+      const memesCategory = updatedCategories.find((c: any) => c.name === 'Programming Memes')
+
+      expect(aiCodingCategory.likedExamples).toContain(
+        'Amazing new AI coding assistant that writes perfect code',
+      )
+      expect(aiCodingCategory.likedExamples).toContain('Another AI tool for better productivity')
+      expect(aiCodingCategory.dislikedExamples).toHaveLength(0)
+
+      expect(memesCategory.likedExamples).toHaveLength(0)
+      expect(memesCategory.dislikedExamples).toContain('Funny meme about debugging at 3am')
+
+      // Test removing rating (unrating)
+      db.updateRating(postId1, null)
+
+      const categoriesAfterUnrating = JSON.parse(fs.readFileSync('./categories.json', 'utf-8'))
+      const aiCodingAfterUnrating = categoriesAfterUnrating.find((c: any) => c.name === 'AI Coding')
+
+      expect(aiCodingAfterUnrating.likedExamples).not.toContain(
+        'Amazing new AI coding assistant that writes perfect code',
+      )
+      expect(aiCodingAfterUnrating.likedExamples).toContain(
+        'Another AI tool for better productivity',
+      )
+
+      // Test changing rating from positive to negative
+      db.updateRating(postId3, -1)
+
+      const categoriesAfterRatingChange = JSON.parse(fs.readFileSync('./categories.json', 'utf-8'))
+      const aiCodingAfterChange = categoriesAfterRatingChange.find(
+        (c: any) => c.name === 'AI Coding',
+      )
+
+      expect(aiCodingAfterChange.likedExamples).toHaveLength(0)
+      expect(aiCodingAfterChange.dislikedExamples).toContain(
+        'Another AI tool for better productivity',
+      )
+    }
+
+    // Clean up test categories file
+    if (fs.existsSync('./categories.json')) {
+      fs.unlinkSync('./categories.json')
+    }
+  })
 })

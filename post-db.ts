@@ -30,12 +30,21 @@ export interface PaginatedResult {
   hasPrevious: boolean
 }
 
+interface Category {
+  name: string
+  overview: string
+  likedExamples: string[]
+  dislikedExamples: string[]
+}
+
 export class PostDB {
   private dbPath: string
   private data!: PostDBData
+  private categoriesPath: string
 
   constructor(dbPath: string = path.join(os.homedir(), '.attn', 'posts.json')) {
     this.dbPath = path.resolve(dbPath)
+    this.categoriesPath = path.resolve('./categories.json')
     this.loadDB()
   }
 
@@ -192,16 +201,97 @@ export class PostDB {
   }
 
   /**
+   * Load categories from categories.json
+   */
+  private loadCategories(): Category[] {
+    try {
+      if (fs.existsSync(this.categoriesPath)) {
+        const rawData = fs.readFileSync(this.categoriesPath, 'utf-8')
+        return JSON.parse(rawData)
+      }
+      return []
+    } catch (error) {
+      console.warn('Error loading categories:', error)
+      return []
+    }
+  }
+
+  /**
+   * Save categories to categories.json
+   */
+  private saveCategories(categories: Category[]): void {
+    try {
+      fs.writeFileSync(this.categoriesPath, JSON.stringify(categories, null, 2))
+    } catch (error) {
+      console.error('Error saving categories:', error)
+    }
+  }
+
+  /**
+   * Update category examples based on post rating
+   */
+  private updateCategoryExamples(
+    post: Post,
+    newRating: number | null,
+    oldRating: number | null,
+  ): void {
+    if (!post.category) return
+
+    const categories = this.loadCategories()
+    const category = categories.find((c) => c.name === post.category)
+    if (!category) return
+
+    const postDescription = post.description
+
+    // Remove from previous rating arrays if it was previously rated
+    if (oldRating !== null) {
+      if (oldRating > 0) {
+        // Remove from liked examples
+        category.likedExamples = category.likedExamples.filter(
+          (example) => example !== postDescription,
+        )
+      } else if (oldRating < 0) {
+        // Remove from disliked examples
+        category.dislikedExamples = category.dislikedExamples.filter(
+          (example) => example !== postDescription,
+        )
+      }
+    }
+
+    // Add to new rating array if rating is not null
+    if (newRating !== null) {
+      if (newRating > 0) {
+        // Add to liked examples if not already present
+        if (!category.likedExamples.includes(postDescription)) {
+          category.likedExamples.push(postDescription)
+        }
+      } else if (newRating < 0) {
+        // Add to disliked examples if not already present
+        if (!category.dislikedExamples.includes(postDescription)) {
+          category.dislikedExamples.push(postDescription)
+        }
+      }
+    }
+
+    this.saveCategories(categories)
+  }
+
+  /**
    * Update the rating of a post
    */
-  updateRating(postId: string, rating: number): boolean {
+  updateRating(postId: string, rating: number | null): boolean {
     this.loadDB()
     const post = this.data.posts.find((p) => p.id === postId)
     if (!post) {
       return false
     }
 
+    const oldRating = post.rating
     post.rating = rating
+
+    // Update category examples based on the rating change
+    this.updateCategoryExamples(post, rating, oldRating)
+
     this.saveDB()
     return true
   }

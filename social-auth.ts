@@ -185,7 +185,7 @@ export class SocialAuth {
    */
   async startBrowser(): Promise<SocialPages> {
     const browser = await puppeteer.launch({
-      headless: true,
+      headless: false,
       defaultViewport: null,
       args: ['--start-maximized'],
     })
