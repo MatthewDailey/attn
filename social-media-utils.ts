@@ -254,6 +254,8 @@ async function scrollAndGatherPosts(
 
   const capturedPosts = new Set<string>()
   let screenshotCount = 0
+  let roundsWithoutProgress = 0
+  const maxRoundsWithoutProgress = 3
 
   while (screenshotCount < numPostsToLookAt) {
     // Get all post elements currently visible - try primary selector first, then fallbacks
@@ -282,6 +284,8 @@ async function scrollAndGatherPosts(
 
     console.log(`Found ${postElements.length} post elements on current viewport`)
 
+    // Process posts in the current viewport
+    let processedInThisRound = 0
     for (const postElement of postElements) {
       if (screenshotCount >= numPostsToLookAt) {
         break
@@ -293,16 +297,19 @@ async function scrollAndGatherPosts(
 
         // Skip if we've already captured this post
         if (capturedPosts.has(postId)) {
+          console.log(`⏭️  Skipping already captured post: ${postId}`)
           continue
         }
 
-        // Check if the post is in the viewport
+        // Check if the post is in the viewport or close to it
         const isInViewport = await postElement.evaluate((el) => {
           const rect = el.getBoundingClientRect()
-          return rect.top >= 0 && rect.top < window.innerHeight
+          // More lenient viewport check - include posts that are partially visible or just outside
+          return rect.top >= -200 && rect.top < window.innerHeight + 200
         })
 
         if (!isInViewport) {
+          console.log(`👁️  Post ${postId} not in viewport, skipping`)
           continue
         }
 
@@ -339,31 +346,103 @@ async function scrollAndGatherPosts(
 
         capturedPosts.add(postId)
         screenshotCount++
+        processedInThisRound++
       } catch (error) {
         console.warn(`Failed to capture screenshot of ${platformName} post: ${error}`)
         continue
       }
     }
 
+    console.log(
+      `📊 Processed ${processedInThisRound} new posts in this round (${screenshotCount}/${numPostsToLookAt} total)`,
+    )
+
+    // Check if we're making progress
+    if (processedInThisRound === 0) {
+      roundsWithoutProgress++
+      if (roundsWithoutProgress >= maxRoundsWithoutProgress) {
+        console.log('🛑 No progress in multiple rounds, ending capture')
+        break
+      }
+    } else {
+      roundsWithoutProgress = 0
+    }
+
     // If we haven't reached our target, scroll down to load more posts
     if (screenshotCount < numPostsToLookAt) {
       console.log(`Captured ${screenshotCount}/${numPostsToLookAt} posts, scrolling for more...`)
 
-      // Scroll down to load more content
-      await page.evaluate(() => {
-        window.scrollBy(0, window.innerHeight * 0.8)
-      })
+      // Get current post count before scrolling
+      const initialPostCount = postElements.length
+      let newContentLoaded = false
+      let scrollAttempts = 0
+      const maxScrollAttempts = 5
 
-      // Wait for new content to load
-      await delay(2000)
+      while (!newContentLoaded && scrollAttempts < maxScrollAttempts) {
+        scrollAttempts++
+        console.log(`Scroll attempt ${scrollAttempts}/${maxScrollAttempts}`)
 
-      // Check if we're at the bottom of the page or no new content is loading
-      const currentHeight = await page.evaluate(() => document.body.scrollHeight)
-      await delay(1000)
-      const newHeight = await page.evaluate(() => document.body.scrollHeight)
+        // Gradual scrolling to trigger lazy loading - multiple smaller scrolls
+        for (let i = 0; i < 3; i++) {
+          await page.evaluate(() => {
+            window.scrollBy(0, window.innerHeight * 0.3)
+          })
+          await delay(800) // Wait between small scrolls
+        }
 
-      if (currentHeight === newHeight) {
-        console.log('Reached end of feed or no new content loading')
+        // Additional wait for content to load
+        await delay(3000)
+
+        // Check for new posts by counting elements, not just page height
+        let newPostElements: ElementHandle[] = []
+        try {
+          newPostElements = await page.$$(config.postSelector)
+        } catch (e) {
+          // Try fallback selectors
+          if (config.fallbackSelectors) {
+            for (const fallbackSelector of config.fallbackSelectors) {
+              try {
+                newPostElements = await page.$$(fallbackSelector)
+                if (newPostElements.length > 0) break
+              } catch (e) {
+                continue
+              }
+            }
+          }
+        }
+
+        console.log(`Post count: ${initialPostCount} -> ${newPostElements.length}`)
+
+        // Check if we found new posts
+        if (newPostElements.length > initialPostCount) {
+          newContentLoaded = true
+          console.log(`✅ Found ${newPostElements.length - initialPostCount} new posts`)
+        } else {
+          console.log(`⏳ No new posts yet, waiting longer...`)
+
+          // Try scrolling to the very bottom to trigger more loading
+          await page.evaluate(() => {
+            window.scrollTo(0, document.body.scrollHeight)
+          })
+          await delay(2000)
+
+          // Check one more time after bottom scroll
+          try {
+            const bottomCheckPosts = await page.$$(config.postSelector)
+            if (bottomCheckPosts.length > initialPostCount) {
+              newContentLoaded = true
+              console.log(
+                `✅ Found ${bottomCheckPosts.length - initialPostCount} new posts after bottom scroll`,
+              )
+            }
+          } catch (e) {
+            // Continue to next attempt
+          }
+        }
+      }
+
+      if (!newContentLoaded) {
+        console.log('🛑 No new content loaded after multiple scroll attempts, ending capture')
         break
       }
     }

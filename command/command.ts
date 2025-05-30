@@ -67,7 +67,7 @@ yargs(hideBin(process.argv))
         .positional('directory', {
           describe: 'Directory to save screenshots',
           type: 'string',
-          default: './twitter-screenshots',
+          default: './screenshots/twitter',
         })
     },
     async (argv) => {
@@ -131,7 +131,7 @@ yargs(hideBin(process.argv))
         .positional('directory', {
           describe: 'Directory to save screenshots',
           type: 'string',
-          default: './linkedin-screenshots',
+          default: './screenshots/linkedin',
         })
     },
     async (argv) => {
