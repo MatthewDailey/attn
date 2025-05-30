@@ -5,7 +5,9 @@
 import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { SocialAuth } from '../social-auth.js'
-import { scrollAndGatherTwitter, scrollAndGatherTwitterAlternative } from '../twitter-utils.js'
+import { scrollAndGatherTwitter } from '../twitter-utils.js'
+import { reviewSocialPost } from '../social-post-reviewer.js'
+import type { Category } from '../social-post-reviewer.js'
 import path from 'path'
 
 const socialAuth = new SocialAuth()
@@ -111,6 +113,75 @@ yargs(hideBin(process.argv))
         console.log('🔄 Process completed! You can now close the browser window.')
       } catch (error) {
         console.error('Twitter screenshot capture failed:', error)
+        process.exit(1)
+      }
+    },
+  )
+  .command(
+    'review-post <imagePath>',
+    'Review a social media post image using AI',
+    (yargs) => {
+      return yargs
+        .positional('imagePath', {
+          describe: 'Path to the image file to review',
+          type: 'string',
+          demandOption: true,
+        })
+        .option('categories', {
+          alias: 'c',
+          describe: 'Path to JSON file containing categories (optional)',
+          type: 'string',
+        })
+    },
+    async (argv) => {
+      try {
+        let categories: Category[] = [
+          {
+            name: 'AI Coding',
+            overview: 'Posts about AI coding tools, AI coding agents, and AI coding frameworks',
+            likedExamples: [],
+            dislikedExamples: [],
+          },
+          {
+            name: 'Programming and AI Memes',
+            overview: 'Programming and AI memes, jokes, and funny content',
+            likedExamples: [],
+            dislikedExamples: [],
+          },
+        ]
+
+        // Load custom categories if provided
+        if (argv.categories) {
+          try {
+            const fs = await import('fs')
+            const categoriesJson = fs.readFileSync(argv.categories, 'utf-8')
+            categories = JSON.parse(categoriesJson)
+            console.log(`📂 Loaded ${categories.length} custom categories from ${argv.categories}`)
+          } catch (error) {
+            console.warn(
+              `⚠️ Could not load categories from ${argv.categories}, using default categories`,
+            )
+          }
+        } else {
+          console.log('📋 Using default sample categories')
+        }
+
+        console.log('🔍 Analyzing image with AI...')
+        const result = await reviewSocialPost(argv.imagePath, categories)
+
+        console.log('\n📊 Analysis Results:')
+        console.log('='.repeat(50))
+        console.log('📝 Description:')
+        console.log(result.description)
+        console.log('\n🏷️ Category Match:')
+        if (result.categoryName) {
+          console.log(`✅ ${result.categoryName}`)
+        } else {
+          console.log('❌ No matching category found')
+        }
+        console.log('='.repeat(50))
+      } catch (error) {
+        console.error('❌ Failed to review post:', error)
         process.exit(1)
       }
     },

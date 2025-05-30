@@ -23,9 +23,33 @@ npm run check   # TypeScript checks
 npm run format  # Format code with prettier
 ```
 
+## Environment Setup
+
+For AI-powered social post review functionality, you'll need a Google Gemini API key:
+
+1. **Get a Google API Key**:
+   - Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
+   - Create a new API key
+
+2. **Set Environment Variable**:
+   ```bash
+   # Mac/Linux
+   export GOOGLE_API_KEY="your_api_key_here"
+   
+   # Windows
+   setx GOOGLE_API_KEY "your_api_key_here"
+   ```
+
+   Or create a `.env` file in your project root:
+   ```
+   GOOGLE_API_KEY=your_api_key_here
+   ```
+
+> **Note**: Never commit your `.env` file with real API keys to version control.
+
 ## Social Media Automation
 
-This project includes functionality for automating interactions with social media platforms like Twitter and LinkedIn using Puppeteer.
+This project includes functionality for automating interactions with social media platforms like Twitter and LinkedIn using Puppeteer, as well as AI-powered content analysis.
 
 ### Quick Start
 
@@ -40,7 +64,13 @@ This project includes functionality for automating interactions with social medi
    npm run cli twitter-screenshots 10 ./my-screenshots  # Custom directory
    ```
 
-3. **Check login status**:
+3. **Review social media posts with AI**:
+   ```bash
+   npm run cli review-post ./path/to/image.png
+   npm run cli review-post ./screenshot.jpg --categories ./my-categories.json
+   ```
+
+4. **Check login status**:
    ```bash
    npm run cli status
    ```
@@ -108,6 +138,7 @@ npm run cli status                   # Check current login status
 npm run cli logout                   # Clear saved authentication
 npm run cli browser                  # Start authenticated browser session
 npm run cli twitter-screenshots     # Capture Twitter post screenshots
+npm run cli review-post <imagePath>  # Analyze social media post with AI
 ```
 
 ### Social Authentication
@@ -126,6 +157,82 @@ await pages.withTwitter(async (page) => {
   await scrollAndGatherTwitter(page, './screenshots', 5)
 })
 ```
+
+### AI-Powered Social Post Review
+
+The `reviewSocialPost` function uses Google Gemini AI to analyze social media post images and categorize them based on your preferences.
+
+#### Features
+
+- 🤖 **AI Analysis**: Uses Google Gemini to analyze post content, text, and visual elements
+- 🏷️ **Smart Categorization**: Matches posts to your predefined categories based on content and examples
+- 💡 **Few-shot Learning**: Uses your liked/disliked examples to better understand your preferences
+- 📊 **Structured Output**: Returns detailed descriptions and category classifications
+- 🎯 **Customizable**: Define your own categories with specific preferences
+
+#### CLI Usage
+
+```bash
+# Analyze a screenshot with default categories
+npm run cli review-post ./twitter-screenshots/tweet_1_123456.png
+
+# Use custom categories
+npm run cli review-post ./image.jpg --categories ./my-categories.json
+
+# Get help
+npm run cli review-post --help
+```
+
+#### Programmatic Usage
+
+```typescript
+import { reviewSocialPost, Category } from './social-post-reviewer.js'
+
+const categories: Category[] = [
+  {
+    name: 'Tech News',
+    overview: 'Posts about technology, software development, AI, and tech industry news',
+    likedExamples: [
+      'Breakthrough in AI research shows 50% improvement in language understanding',
+      'New JavaScript framework promises 10x faster development'
+    ],
+    dislikedExamples: [
+      'Tech company announces another round of layoffs',
+      'Privacy concerns raised over new social media platform'
+    ]
+  }
+  // ... more categories
+]
+
+const result = await reviewSocialPost('./path/to/image.png', categories)
+console.log('Description:', result.description)
+console.log('Category:', result.categoryName) // string | null
+```
+
+#### Category Structure
+
+Each category should have the following structure:
+
+```typescript
+interface Category {
+  name: string                    // Category name
+  overview: string               // Brief description of the category
+  likedExamples: string[]       // Examples of posts you like in this category
+  dislikedExamples: string[]    // Examples of posts you dislike in this category
+}
+```
+
+The `likedExamples` and `dislikedExamples` help the AI understand your specific preferences within each category, acting as few-shot examples to improve classification accuracy.
+
+#### Example Categories File
+
+See `sample-categories.json` for a complete example with categories like:
+- **Tech News**: Technology and software development content
+- **Educational**: Learning resources and tutorials  
+- **Career Development**: Professional growth and workplace advice
+- **Personal Finance**: Financial advice and money management
+
+You can customize these categories or create your own based on your interests and preferences.
 
 ## Deploy with Render 
 

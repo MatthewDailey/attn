@@ -16,7 +16,7 @@
 [] fn to scroll and gather posts from linkedin scrollAndGatherLinkedin(page)
   - text inside div with data-id="urn:li:activity:7333910771602530322"
 [] local postdb (description, imageUrl, timestamp, rating) with 'list'
-[] agent to evaluate posts
+[x] agent to evaluate posts
   - could categorize (eg have /default /programming-memes)
 [] loop to 
 
