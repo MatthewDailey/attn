@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "start": "concurrently \"tsx watch server/index.ts\" \"vite --port 3000\"",
+    "start": "concurrently \"tsx watch server/index.ts\" \"vite --port 3000\" \"ngrok http --url=just-presumably-warthog.ngrok-free.app 3000 --log=stdout\"",
     "dev:server": "tsx watch server/index.ts",
     "dev:client": "vite --port 3000",
     "cli": "tsx command/command.ts",

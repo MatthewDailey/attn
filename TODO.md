@@ -34,7 +34,6 @@
   [] hide when disliked
 [] ability to mark a post as viewed (eg inbox 0 it)
 [] ngrok tunnel to view from phone (is there a JS package i can just include?)
-[] `npm start` to run the main command 
 [] try headless
 [] try getting link to post working
 [] onboarding ux
