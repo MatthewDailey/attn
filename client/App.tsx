@@ -274,7 +274,7 @@ function App() {
     <div className="app">
       <header className="header">
         <div className="header-content">
-          <h1 className="app-title">attn</h1>
+          <h1 className="app-title">attn:</h1>
           <div className="filters">
             <select
               value={selectedCategory}
