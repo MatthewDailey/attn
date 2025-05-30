@@ -28,29 +28,6 @@ export interface GatherPostsResult {
   screenshotDir: string
 }
 
-const defaultCategories: Category[] = [
-  {
-    name: 'AI Coding',
-    overview: 'Posts about AI coding tools, AI coding agents, and AI coding frameworks',
-    likedExamples: [
-      'New AI coding assistant that helps write better code',
-      'AI agent that can debug and fix code automatically',
-      'Framework for building AI coding applications',
-    ],
-    dislikedExamples: ['General programming tutorials without AI', 'Basic coding tips'],
-  },
-  {
-    name: 'Programming and AI Memes',
-    overview: 'Programming and AI memes, jokes, and funny content',
-    likedExamples: [
-      'Funny AI chatbot conversations',
-      'Programming jokes and memes',
-      'AI mishaps and funny bugs',
-    ],
-    dislikedExamples: ['Generic tech memes', 'Non-programming related humor'],
-  },
-]
-
 /**
  * Gather posts from specified social media platforms, take screenshots, analyze with AI, and store in database
  */
@@ -63,9 +40,13 @@ export async function gatherAndStorePosts(
     numPosts,
     screenshotDir = path.join(os.homedir(), '.attn', 'screenshots'),
     dbPath = path.join(os.homedir(), '.attn', 'posts.json'),
-    categories = defaultCategories,
+    categories = [],
     platforms,
   } = options
+
+  if (categories.length === 0) {
+    throw new Error('No categories provided. Use -c to specify categories.')
+  }
 
   // Initialize database
   const postDB = new PostDB(dbPath)

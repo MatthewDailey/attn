@@ -260,16 +260,17 @@ yargs(hideBin(process.argv))
     'Gather posts from both platforms and store them in the database',
     (yargs) => {
       return yargs
-        .option('count', {
-          alias: 'c',
+        .option('num', {
+          alias: 'n',
           describe: 'Number of posts to gather',
           type: 'number',
           default: 10,
         })
         .option('categories', {
-          alias: 'C',
+          alias: 'c',
           describe: 'Path to JSON file containing categories (optional)',
           type: 'string',
+          default: path.join(os.homedir(), '.attn', 'categories.json'),
         })
     },
     async (argv) => {
@@ -324,7 +325,7 @@ yargs(hideBin(process.argv))
 
             // Set up screenshot directory
             const screenshotDir = path.resolve(path.join(os.homedir(), '.attn', 'screenshots'))
-            const numPostsToGather = argv.count
+            const numPostsToGather = argv.num
 
             console.log(
               `📸 Gathering ${numPostsToGather} posts from both platforms to ${screenshotDir}...`,

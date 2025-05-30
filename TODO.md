@@ -28,36 +28,17 @@
 [x] need to change tabs in browser when starting to read that one
 [x] clean up ui a bit
 [x] have linkedin scroll so top of target node is at 60px from top
-[] handle images
-[] use the likes and dislikes in filtering
+[x] handle images -> turned off expanding
 [] change prompt and category def to have "things I want in this category" and things I don't want
+[] use the likes and dislikes in filtering
+  [] update ui
+  [] hide when disliked
 [] ability to mark a post as viewed (eg inbox 0 it)
 [] ngrok tunnel to view from phone (is there a JS package i can just include?)
+[] `npm start` to run the main command 
+[] try headless
+[] try getting link to post working
 [] onboarding ux
   [] ensure gemini API key is present
   [] do an initial scroll and open the home page
 
-its okay if there are no interesting posts
-
-thing i like:
-- building cool stuff with ai
-- new AI models, especially related to ai coding
-- ai agent developers
-- ai coding tools
-
-things i don't like:
-- fund raising posts
-- job updates
-- recruiting posts
-- political content
-
-twitter
-- text inside  tag
-  - find contained user avatar position, click just below user avatar to get tweet link. go back to feed
-  - open new page to https://publish.twitter.com/?query=https://x.com/tdinh_me/status/1928072926038794267&widget=Tweet
-  - read from <code class="EmbedCode-code">..
-
-li:
-  - find child button with aria-label="Open control menu ..."
-  [] link to embed
-  <iframe src="https://www.linkedin.com/embed/feed/update/urn:li:share:7333894278835838976" height="1322" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>

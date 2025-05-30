@@ -4,10 +4,11 @@
   "type": "module",
   "scripts": {
     "build": "vite build",
-    "dev": "concurrently \"tsx watch server/index.ts\" \"vite --port 3000\"",
+    "start": "concurrently \"tsx watch server/index.ts\" \"vite --port 3000\"",
     "dev:server": "tsx watch server/index.ts",
     "dev:client": "vite --port 3000",
     "cli": "tsx command/command.ts",
+    "gather": "tsx command/command.ts gather-posts",
     "test": "vitest run",
     "format": "prettier --write .",
     "check": "tsc --noEmit",
