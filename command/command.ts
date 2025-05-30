@@ -229,11 +229,9 @@ yargs(hideBin(process.argv))
               console.warn('⚠️ Post gathering failed:', error)
             }
 
-            console.log('✅ Posts gathering completed!')
+            console.log('\n✅ Posts gathering completed! Open http://localhost:3000 to view them.')
           })
         })
-
-        console.log('🔄 Process completed! You can now close the browser window.')
       } catch (error) {
         console.error('Failed to gather posts:', error)
         process.exit(1)

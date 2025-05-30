@@ -257,10 +257,10 @@ async function capturePostScreenshots(
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // Expand content if supported
-        // if (config.expandContent) {
-        //   await config.expandContent(postElement)
-        //   await new Promise((resolve) => setTimeout(resolve, 1000))
-        // }
+        if (config.expandContent) {
+          await config.expandContent(postElement)
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+        }
 
         // Take screenshot
         const filename = `${platform}_${screenshotCount + 1}_${platformUniqueId}.png`
