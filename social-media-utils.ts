@@ -15,10 +15,6 @@ export async function focusBrowserTab(page: Page, platformName: string): Promise
     // Bring the page to the front
     await page.bringToFront()
 
-    // Click on the page to ensure it's focused (sometimes needed for proper focus)
-    await page.click('body')
-
-    // Brief wait to ensure focus is properly set
     await delay(1000)
 
     console.log(`✅ ${platformName} tab is now focused`)
