@@ -13,6 +13,7 @@ export interface Post {
   platformUniqueId?: string // Platform-specific unique identifier (tweet ID, LinkedIn activity ID, etc.)
   contentHash?: string // Hash of image content for deduplication across platforms
   screenshotPath: string // Local path to the screenshot file
+  category?: string // Category assigned by AI analysis
 }
 
 interface PostDBData {
@@ -159,6 +160,7 @@ export class PostDB {
     originalPostId?: string,
     platformUniqueId?: string,
     contentHash?: string,
+    category?: string,
   ): string | null {
     // Check for duplicates
     if (this.postExists(description, screenshotPath, platformUniqueId, contentHash)) {
@@ -176,6 +178,7 @@ export class PostDB {
       platformUniqueId,
       contentHash,
       screenshotPath,
+      category,
     }
 
     // Add to the end of the array (most recent)
@@ -328,6 +331,54 @@ export class PostDB {
   }
 
   /**
+   * Get posts by category
+   */
+  getPostsByCategory(category: string): Post[] {
+    return this.data.posts
+      .filter((p) => p.category === category)
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+  }
+
+  /**
+   * Get all unique categories in the database
+   */
+  getAllCategories(): string[] {
+    const categories = new Set(
+      this.data.posts
+        .map((p) => p.category)
+        .filter((category): category is string => category !== undefined && category !== null),
+    )
+    return Array.from(categories).sort()
+  }
+
+  /**
+   * Get posts with pagination filtered by category
+   */
+  getPostsByCategory_Paginated(
+    category: string,
+    pageSize: number = 10,
+    page: number = 0,
+  ): PaginatedResult {
+    const filteredPosts = this.data.posts
+      .filter((p) => p.category === category)
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+
+    const totalPosts = filteredPosts.length
+    const startIndex = page * pageSize
+    const endIndex = Math.min(startIndex + pageSize, totalPosts)
+
+    const posts = filteredPosts.slice(startIndex, endIndex)
+
+    return {
+      posts,
+      currentIndex: this.data.currentIndex,
+      totalPosts,
+      hasMore: endIndex < totalPosts,
+      hasPrevious: page > 0,
+    }
+  }
+
+  /**
    * Get database statistics
    */
   getStats(): {
@@ -336,6 +387,7 @@ export class PostDB {
     unratedPosts: number
     platformBreakdown: Record<string, number>
     ratingBreakdown: Record<string, number>
+    categoryBreakdown: Record<string, number>
   } {
     const totalPosts = this.data.posts.length
     const ratedPosts = this.data.posts.filter((p) => p.rating !== null).length
@@ -343,6 +395,7 @@ export class PostDB {
 
     const platformBreakdown: Record<string, number> = {}
     const ratingBreakdown: Record<string, number> = {}
+    const categoryBreakdown: Record<string, number> = {}
 
     this.data.posts.forEach((post) => {
       // Platform breakdown
@@ -354,6 +407,11 @@ export class PostDB {
         const rating = post.rating.toString()
         ratingBreakdown[rating] = (ratingBreakdown[rating] || 0) + 1
       }
+
+      // Category breakdown
+      if (post.category) {
+        categoryBreakdown[post.category] = (categoryBreakdown[post.category] || 0) + 1
+      }
     })
 
     return {
@@ -362,6 +420,7 @@ export class PostDB {
       unratedPosts,
       platformBreakdown,
       ratingBreakdown,
+      categoryBreakdown,
     }
   }
 

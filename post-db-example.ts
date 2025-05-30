@@ -54,11 +54,9 @@ export async function processPostScreenshot(
     console.log(`Review result: ${reviewResult.description}`)
     console.log(`Category: ${reviewResult.categoryName || 'None'}`)
 
-    // Determine if we want to keep this post
-    const shouldKeep = reviewResult.categoryName === 'AI Coding Tools'
-
-    if (!shouldKeep) {
-      console.log('Post filtered out - not relevant')
+    // Only add posts that were categorized (consistent with the gatherer approach)
+    if (!reviewResult.categoryName) {
+      console.log('Post filtered out - no matching category')
       return null
     }
 
@@ -69,6 +67,9 @@ export async function processPostScreenshot(
       null, // No initial rating
       platform,
       originalPostId,
+      undefined, // platformUniqueId
+      undefined, // contentHash
+      reviewResult.categoryName || undefined, // Include category from AI analysis
     )
 
     if (postId) {
@@ -126,6 +127,7 @@ export async function processScreenshotDirectory(directoryPath: string): Promise
   console.log(`Unrated posts: ${stats.unratedPosts}`)
   console.log('Platform breakdown:', stats.platformBreakdown)
   console.log('Rating breakdown:', stats.ratingBreakdown)
+  console.log('Category breakdown:', stats.categoryBreakdown)
 }
 
 /**
@@ -173,6 +175,7 @@ export function getPostsForDisplay(pageSize: number = 10, offset: number = 0) {
       rating: post.rating,
       platform: post.platform,
       originalPostId: post.originalPostId,
+      category: post.category,
     })),
     pagination: {
       currentIndex: page.currentIndex,
@@ -217,6 +220,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     null,
     'twitter',
     'tweet_123456',
+    undefined, // platformUniqueId
+    undefined, // contentHash
+    'AI Coding', // category
   )
 
   if (postId) {

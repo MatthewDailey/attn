@@ -33,6 +33,9 @@ describe('PostDB', () => {
       null,
       'twitter',
       'tweet123',
+      undefined, // platformUniqueId
+      undefined, // contentHash
+      'AI Coding', // category
     )
 
     const postId2 = db.addPost(
@@ -40,6 +43,10 @@ describe('PostDB', () => {
       'https://example.com/image2.png',
       5,
       'linkedin',
+      undefined, // originalPostId
+      undefined, // platformUniqueId
+      undefined, // contentHash
+      'Programming and AI Memes', // category
     )
 
     // Try to add duplicate
@@ -49,6 +56,9 @@ describe('PostDB', () => {
       null,
       'twitter',
       'tweet123',
+      undefined, // platformUniqueId
+      undefined, // contentHash
+      'AI Coding', // category
     )
 
     expect(postId1).toBeTruthy()
@@ -62,7 +72,16 @@ describe('PostDB', () => {
   test('should handle pagination correctly', () => {
     // Add multiple posts
     for (let i = 0; i < 15; i++) {
-      db.addPost(`Post description ${i}`, `https://example.com/image${i}.png`, null, 'twitter')
+      db.addPost(
+        `Post description ${i}`,
+        `https://example.com/image${i}.png`,
+        null,
+        'twitter',
+        undefined,
+        undefined,
+        undefined,
+        'AI Coding',
+      )
     }
 
     // Get first page (starting at index 0)
@@ -80,7 +99,16 @@ describe('PostDB', () => {
   })
 
   test('should update ratings', () => {
-    const postId = db.addPost('Test post', 'https://example.com/test.png')
+    const postId = db.addPost(
+      'Test post',
+      'https://example.com/test.png',
+      null,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      'AI Coding',
+    )
 
     expect(postId).toBeTruthy()
     if (postId) {
@@ -93,9 +121,36 @@ describe('PostDB', () => {
   })
 
   test('should filter posts by rating and platform', () => {
-    db.addPost('Twitter post 1', 'img1.png', 5, 'twitter')
-    db.addPost('LinkedIn post 1', 'img2.png', 3, 'linkedin')
-    db.addPost('Twitter post 2', 'img3.png', 5, 'twitter')
+    db.addPost(
+      'Twitter post 1',
+      'img1.png',
+      5,
+      'twitter',
+      undefined,
+      undefined,
+      undefined,
+      'AI Coding',
+    )
+    db.addPost(
+      'LinkedIn post 1',
+      'img2.png',
+      3,
+      'linkedin',
+      undefined,
+      undefined,
+      undefined,
+      'Programming and AI Memes',
+    )
+    db.addPost(
+      'Twitter post 2',
+      'img3.png',
+      5,
+      'twitter',
+      undefined,
+      undefined,
+      undefined,
+      'AI Coding',
+    )
 
     const highRatedPosts = db.getPostsByRating(5)
     expect(highRatedPosts.length).toBe(2)
@@ -108,9 +163,18 @@ describe('PostDB', () => {
   })
 
   test('should provide accurate statistics', () => {
-    db.addPost('Post 1', 'img1.png', 5, 'twitter')
-    db.addPost('Post 2', 'img2.png', null, 'linkedin')
-    db.addPost('Post 3', 'img3.png', 3, 'twitter')
+    db.addPost('Post 1', 'img1.png', 5, 'twitter', undefined, undefined, undefined, 'AI Coding')
+    db.addPost(
+      'Post 2',
+      'img2.png',
+      null,
+      'linkedin',
+      undefined,
+      undefined,
+      undefined,
+      'Programming and AI Memes',
+    )
+    db.addPost('Post 3', 'img3.png', 3, 'twitter', undefined, undefined, undefined, 'AI Coding')
 
     const stats = db.getStats()
     expect(stats.totalPosts).toBe(3)
@@ -125,7 +189,16 @@ describe('PostDB', () => {
   test('should handle navigation properly', () => {
     // Add some posts
     for (let i = 0; i < 10; i++) {
-      db.addPost(`Post ${i}`, `img${i}.png`)
+      db.addPost(
+        `Post ${i}`,
+        `img${i}.png`,
+        null,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        'AI Coding',
+      )
     }
 
     const initial = db.getCurrentPosition()
@@ -155,7 +228,16 @@ describe('PostDB', () => {
 
   test('should persist data across instances', () => {
     // Add some data with first instance
-    db.addPost('Persistent post', 'img.png', 4, 'twitter')
+    db.addPost(
+      'Persistent post',
+      'img.png',
+      4,
+      'twitter',
+      undefined,
+      undefined,
+      undefined,
+      'AI Coding',
+    )
 
     // Move forward only if there are enough posts to move to
     const position = db.getCurrentPosition()
@@ -176,5 +258,121 @@ describe('PostDB', () => {
     const posts = db2.getAllPosts()
     expect(posts[0].description).toBe('Persistent post')
     expect(posts[0].rating).toBe(4)
+  })
+
+  test('should filter posts by category', () => {
+    db.addPost('AI post 1', 'img1.png', 5, 'twitter', undefined, undefined, undefined, 'AI Coding')
+    db.addPost(
+      'Meme post 1',
+      'img2.png',
+      3,
+      'linkedin',
+      undefined,
+      undefined,
+      undefined,
+      'Programming and AI Memes',
+    )
+    db.addPost('AI post 2', 'img3.png', 4, 'twitter', undefined, undefined, undefined, 'AI Coding')
+    db.addPost('Uncategorized post', 'img4.png', 2, 'twitter') // No category
+
+    const aiPosts = db.getPostsByCategory('AI Coding')
+    expect(aiPosts.length).toBe(2)
+    expect(aiPosts.every((post) => post.category === 'AI Coding')).toBe(true)
+
+    const memePosts = db.getPostsByCategory('Programming and AI Memes')
+    expect(memePosts.length).toBe(1)
+    expect(memePosts[0].category).toBe('Programming and AI Memes')
+
+    const nonExistentCategory = db.getPostsByCategory('Non-existent')
+    expect(nonExistentCategory.length).toBe(0)
+  })
+
+  test('should get all categories', () => {
+    db.addPost('AI post', 'img1.png', 5, 'twitter', undefined, undefined, undefined, 'AI Coding')
+    db.addPost(
+      'Meme post',
+      'img2.png',
+      3,
+      'linkedin',
+      undefined,
+      undefined,
+      undefined,
+      'Programming and AI Memes',
+    )
+    db.addPost(
+      'Another AI post',
+      'img3.png',
+      4,
+      'twitter',
+      undefined,
+      undefined,
+      undefined,
+      'AI Coding',
+    )
+    db.addPost('Uncategorized post', 'img4.png', 2, 'twitter') // No category
+
+    const categories = db.getAllCategories()
+    expect(categories).toEqual(['AI Coding', 'Programming and AI Memes'])
+    expect(categories.length).toBe(2)
+  })
+
+  test('should paginate posts by category', () => {
+    // Add multiple posts for the same category
+    for (let i = 0; i < 5; i++) {
+      db.addPost(
+        `AI post ${i}`,
+        `img${i}.png`,
+        null,
+        'twitter',
+        undefined,
+        undefined,
+        undefined,
+        'AI Coding',
+      )
+    }
+    for (let i = 0; i < 3; i++) {
+      db.addPost(
+        `Meme post ${i}`,
+        `img${i + 5}.png`,
+        null,
+        'twitter',
+        undefined,
+        undefined,
+        undefined,
+        'Programming and AI Memes',
+      )
+    }
+
+    const page1 = db.getPostsByCategory_Paginated('AI Coding', 3, 0)
+    expect(page1.posts.length).toBe(3)
+    expect(page1.totalPosts).toBe(5)
+    expect(page1.hasMore).toBe(true)
+    expect(page1.hasPrevious).toBe(false)
+
+    const page2 = db.getPostsByCategory_Paginated('AI Coding', 3, 1)
+    expect(page2.posts.length).toBe(2)
+    expect(page2.hasMore).toBe(false)
+    expect(page2.hasPrevious).toBe(true)
+  })
+
+  test('should include category breakdown in statistics', () => {
+    db.addPost('AI post 1', 'img1.png', 5, 'twitter', undefined, undefined, undefined, 'AI Coding')
+    db.addPost('AI post 2', 'img2.png', 3, 'linkedin', undefined, undefined, undefined, 'AI Coding')
+    db.addPost(
+      'Meme post',
+      'img3.png',
+      4,
+      'twitter',
+      undefined,
+      undefined,
+      undefined,
+      'Programming and AI Memes',
+    )
+    db.addPost('Uncategorized post', 'img4.png', 2, 'twitter') // No category
+
+    const stats = db.getStats()
+    expect(stats.categoryBreakdown['AI Coding']).toBe(2)
+    expect(stats.categoryBreakdown['Programming and AI Memes']).toBe(1)
+    expect(stats.categoryBreakdown['undefined']).toBeUndefined() // Uncategorized posts shouldn't appear
   })
 })

@@ -130,10 +130,16 @@ export async function gatherAndStorePosts(
           // Analyze with AI
           const analysis = await reviewSocialPost(filePath, categories)
 
+          // Only add to database if categorized as one of the provided options
+          if (analysis.categoryName === null) {
+            console.log(`⏭️ Skipping uncategorized post: ${path.basename(filePath)}`)
+            continue
+          }
+
           // Calculate content hash for deduplication
           const contentHash = PostDB.calculateContentHash(filePath)
 
-          // Add to database
+          // Add to database with category
           const postId = postDB.addPost(
             analysis.description,
             filePath, // screenshotPath
@@ -142,11 +148,12 @@ export async function gatherAndStorePosts(
             undefined, // originalPostId
             platformUniqueId,
             contentHash,
+            analysis.categoryName, // Include category
           )
 
           if (postId) {
             platformResult.postsAddedToDb++
-            console.log(`✅ Added post ${postId} to database`)
+            console.log(`✅ Added post ${postId} to database (Category: ${analysis.categoryName})`)
           } else {
             console.log(`⏭️ Skipped duplicate post: ${path.basename(filePath)}`)
           }

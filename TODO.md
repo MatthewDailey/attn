@@ -27,7 +27,7 @@
 [] onboarding ux
   [] ensure API key is present
   [] do an initial scroll and open the home page
-  [] 
+[] ngrok tunnel to view from phone
 
 its okay if there are no interesting posts
 
