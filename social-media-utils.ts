@@ -368,7 +368,9 @@ async function scrollAndGatherPosts(
         })
         fs.writeFileSync(filepath, buffer)
 
-        console.log(`📸 Screenshot ${screenshotCount + 1}/${numPostsToLookAt}: ${filename}`)
+        console.log(
+          `📸 Screenshot ${screenshotCount + 1}/${numPostsToLookAt}: ${path.resolve(filepath)}`,
+        )
 
         capturedPosts.add(postId)
         screenshotCount++

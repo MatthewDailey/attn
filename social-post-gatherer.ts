@@ -129,14 +129,14 @@ export async function gatherAndStorePosts(
       // Process each screenshot with AI and store in database
       for (const { filePath, platformUniqueId } of capturedFiles) {
         try {
-          console.log(`🤖 Analyzing ${path.basename(filePath)}...`)
+          console.log(`🤖 Analyzing ${path.resolve(filePath)}...`)
 
           // Analyze with AI
           const analysis = await reviewSocialPost(filePath, categories)
 
           // Only add to database if categorized as one of the provided options
           if (analysis.categoryName === null) {
-            console.log(`⏭️ Skipping uncategorized post: ${path.basename(filePath)}`)
+            console.log(`⏭️ Skipping uncategorized post: ${path.resolve(filePath)}`)
             continue
           }
 
@@ -159,10 +159,10 @@ export async function gatherAndStorePosts(
             platformResult.postsAddedToDb++
             console.log(`✅ Added post ${postId} to database (Category: ${analysis.categoryName})`)
           } else {
-            console.log(`⏭️ Skipped duplicate post: ${path.basename(filePath)}`)
+            console.log(`⏭️ Skipped duplicate post: ${path.resolve(filePath)}`)
           }
         } catch (error) {
-          const errorMsg = `Failed to process ${path.basename(filePath)}: ${error}`
+          const errorMsg = `Failed to process ${path.resolve(filePath)}: ${error}`
           console.error(`❌ ${errorMsg}`)
           platformResult.errors.push(errorMsg)
         }
@@ -282,7 +282,7 @@ async function capturePostScreenshots(
         screenshotCount++
         processedInThisRound++
 
-        console.log(`📸 ${screenshotCount}/${numPosts}: ${filename}`)
+        console.log(`📸 ${screenshotCount}/${numPosts}: ${path.resolve(filePath)}`)
       } catch (error) {
         console.warn(`Failed to capture post: ${error}`)
         continue
