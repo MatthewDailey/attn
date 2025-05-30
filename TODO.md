@@ -29,10 +29,7 @@
 [x] clean up ui a bit
 [x] have linkedin scroll so top of target node is at 60px from top
 [x] handle images -> turned off expanding
-[] use the likes and dislikes in filtering
-  [] update ui
-  [] hide when disliked
-[] ability to mark a post as viewed (eg inbox 0 it)
+[x] hide when disliked
 [x] ngrok tunnel to view from phone (is there a JS package i can just include?)
 [x] try headless
 

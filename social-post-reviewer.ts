@@ -66,7 +66,7 @@ Instructions:
 Please analyze the image and provide your response.`
 
     const result = await generateObject({
-      model: google('gemini-1.5-pro-latest'),
+      model: google('gemini-2.0-flash'),
       messages: [
         {
           role: 'user',

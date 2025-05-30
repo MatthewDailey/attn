@@ -170,7 +170,22 @@ function App() {
               <div className="post-meta">
                 <div className="platform">{getPlatformIcon(post.platform || 'default')}</div>
                 <span className="timestamp">{formatTimestamp(post.timestamp)}</span>
-                {post.category && <span className="category">{post.category}</span>}
+                {post.category && (
+                  <span
+                    className="category-badge"
+                    style={{
+                      backgroundColor: getCategoryColor(post.category),
+                      color: 'white',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      fontSize: '0.75rem',
+                      fontWeight: '500',
+                      marginLeft: '8px',
+                    }}
+                  >
+                    {post.category}
+                  </span>
+                )}
               </div>
               <div className="post-actions">
                 <button
@@ -224,6 +239,29 @@ function App() {
 }
 
 export default App
+
+// Helper function to generate consistent colors for categories
+const getCategoryColor = (category: string) => {
+  const colors = [
+    '#3B82F6', // blue
+    '#10B981', // emerald
+    '#F59E0B', // amber
+    '#EF4444', // red
+    '#8B5CF6', // violet
+    '#06B6D4', // cyan
+    '#84CC16', // lime
+    '#F97316', // orange
+    '#EC4899', // pink
+    '#6366F1', // indigo
+  ]
+
+  // Simple hash function to consistently map category names to colors
+  let hash = 0
+  for (let i = 0; i < category.length; i++) {
+    hash = category.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  return colors[Math.abs(hash) % colors.length]
+}
 
 const getPlatformIcon = (platform: string) => {
   // Platform icon mapping - replace with actual SVG icons
