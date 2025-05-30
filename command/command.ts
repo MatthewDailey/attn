@@ -13,6 +13,7 @@ import { PostDB } from '../post-db.js'
 import type { Category } from '../social-post-reviewer.js'
 import path from 'path'
 import os from 'os'
+import { spawn, exec } from 'child_process'
 
 const socialAuth = new SocialAuth()
 
@@ -500,7 +501,7 @@ yargs(hideBin(process.argv))
         })
 
         // Now start the web server with the session database
-        console.log(`🚀 Starting web server on port ${argv.port}...`)
+        console.log(`🚀 Starting API server on port ${argv.port}...`)
 
         // Import and start the server
         const { createApp } = await import('../server/app.js')
@@ -510,22 +511,82 @@ yargs(hideBin(process.argv))
 
         const app = await createApp()
 
+        let apiServerReady = false
+        let viteServerReady = false
+
+        // Function to open browser when both servers are ready
+        const tryOpenBrowser = () => {
+          if (apiServerReady && viteServerReady) {
+            console.log('🌐 Opening browser at http://localhost:3000...')
+            exec('open http://localhost:3000', (error) => {
+              if (error) {
+                console.warn('⚠️ Could not open browser automatically:', error.message)
+                console.log('👀 Please manually open http://localhost:3000 in your browser')
+              }
+            })
+          }
+        }
+
+        // Start API server
         const server = app.listen(argv.port, () => {
-          console.log(`🌐 Web server running at http://localhost:${argv.port}`)
+          console.log(`🌐 API server running at http://localhost:${argv.port}`)
           console.log(`📊 Session ID: ${sessionId}`)
           console.log(`📂 Database: ${dbPath}`)
-          console.log('👀 Open your browser to view and rate the posts!')
-          console.log('🛑 Press Ctrl+C to stop the server')
+          apiServerReady = true
+          tryOpenBrowser()
         })
 
-        // Handle graceful shutdown
-        process.on('SIGINT', () => {
-          console.log('\n🛑 Shutting down server...')
-          server.close(() => {
-            console.log('✅ Server closed.')
-            process.exit(0)
-          })
+        // Start Vite dev server on port 3000
+        console.log('⚡ Starting Vite dev server on port 3000...')
+        const viteProcess = spawn('npx', ['vite', '--port', '3000'], {
+          stdio: ['inherit', 'pipe', 'pipe'],
+          env: { ...process.env, VITE_API_PORT: argv.port.toString() },
         })
+
+        let viteStartupBuffer = ''
+        viteProcess.stdout?.on('data', (data) => {
+          const output = data.toString()
+          viteStartupBuffer += output
+          process.stdout.write(output)
+
+          // Check if Vite is ready
+          if (output.includes('Local:') && output.includes('localhost:3000')) {
+            viteServerReady = true
+            tryOpenBrowser()
+          }
+        })
+
+        viteProcess.stderr?.on('data', (data) => {
+          process.stderr.write(data)
+        })
+
+        viteProcess.on('close', (code) => {
+          console.log(`⚡ Vite process exited with code ${code}`)
+        })
+
+        // Handle graceful shutdown for both servers
+        const cleanup = () => {
+          console.log('\n🛑 Shutting down servers...')
+
+          // Close API server
+          server.close(() => {
+            console.log('✅ API server closed.')
+          })
+
+          // Kill Vite process
+          if (viteProcess && !viteProcess.killed) {
+            viteProcess.kill('SIGTERM')
+            console.log('✅ Vite server closed.')
+          }
+
+          process.exit(0)
+        }
+
+        process.on('SIGINT', cleanup)
+        process.on('SIGTERM', cleanup)
+
+        console.log('👀 Both servers starting... Browser will open automatically when ready!')
+        console.log('🛑 Press Ctrl+C to stop both servers')
 
         // Keep the process alive
         await new Promise(() => {})
