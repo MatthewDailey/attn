@@ -9,7 +9,7 @@
 - (bonus) script to synthesize my taste
 
 # todo
-[] login script to open browser and save cookies
+[x] login script to open browser and save cookies
 [] fn to scroll a page and gather posts from twitter scrollAndGatherTwitter(page)
 [] fn to scroll and gather posts from linkedin scrollAndGatherLinkedin(page)
 [] agent to evaluate posts
