@@ -1,5 +1,6 @@
 {
-  "name": "web-starter",
+  "name": "attn",
+  "description": "Attn: An agent to protect your attention",
   "type": "module",
   "scripts": {
     "build": "vite build",

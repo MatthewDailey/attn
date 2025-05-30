@@ -27,12 +27,14 @@
 [x] allow runnning dev on a specific dir to look at prior browses
 [] need to change tabs in browser when starting to read that one
 [] have linkedin scroll so top of target node is at 60px from top
+[] clean up ui a bit
 [] use the likes and dislikes in filtering
+[] change prompt and category def to have "things I want in this category" and things I don't want
 [] ability to mark a post as viewed (eg inbox 0 it)
-[] onboarding ux
-  [] ensure API key is present
-  [] do an initial scroll and open the home page
 [] ngrok tunnel to view from phone (is there a JS package i can just include?)
+[] onboarding ux
+  [] ensure gemini API key is present
+  [] do an initial scroll and open the home page
 
 its okay if there are no interesting posts
 
