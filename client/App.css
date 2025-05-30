@@ -23,6 +23,10 @@ body {
   min-height: 100vh;
 }
 
+.feed {
+  padding-top: 48px;
+}
+
 .header {
   position: fixed;
   top: 0;
@@ -114,10 +118,6 @@ body {
   cursor: pointer;
   text-decoration: underline;
   font-size: 0.9rem;
-}
-
-.feed {
-  padding: 0;
 }
 
 .loading-indicator {
