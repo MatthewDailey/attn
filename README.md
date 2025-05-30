@@ -306,3 +306,176 @@ npm run deploy
 ```
 
 Alternately, link the service to the Github repo for `main` to be automatically deployed.
+```
+
+# Social Media Post Gatherer
+
+This project provides tools to automatically gather, analyze, and rate social media posts from Twitter and LinkedIn using AI.
+
+## Features
+
+- **Authentication**: Secure login to Twitter and LinkedIn with cookie persistence
+- **Post Collection**: Automated screenshot capture from both platforms
+- **AI Analysis**: Intelligent post description and categorization using Google's Gemini AI
+- **Post Database**: Local storage with deduplication and rating system
+- **Enhanced Unique IDs**: Uses platform-specific IDs and content hashing for better deduplication
+
+## Setup
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Set up your Google AI API key:
+```bash
+export GOOGLE_AI_API_KEY="your-api-key-here"
+```
+
+## Commands
+
+### Authentication
+```bash
+# Login to both platforms (saves cookies for future use)
+npm run command login
+
+# Check login status
+npm run command status
+
+# Clear saved cookies
+npm run command logout
+
+# Open browser with authenticated sessions
+npm run command browser
+```
+
+### Post Collection & Analysis
+
+```bash
+# Gather posts from both Twitter and LinkedIn (NEW!)
+# This command captures screenshots, analyzes them with AI, and saves to database
+npm run command gather-posts --count 20
+
+# Gather posts with custom categories
+npm run command gather-posts --count 10 --categories ./my-categories.json
+
+# Capture screenshots from Twitter only
+npm run command twitter-screenshots 10 ./screenshots/twitter
+
+# Capture screenshots from LinkedIn only  
+npm run command linkedin-screenshots 10 ./screenshots/linkedin
+```
+
+### Database Management
+
+```bash
+# List posts from database (NEW!)
+npm run command list-posts --count 20
+
+# List posts from custom database location
+npm run command list-posts --count 10 --db-path ./my-posts.json
+
+# Rate a specific post (NEW!)
+npm run command rate-post "post_id_here" 4
+
+# Rate a post in custom database
+npm run command rate-post "post_id_here" 5 --db-path ./my-posts.json
+```
+
+### Individual Post Analysis
+
+```bash
+# Analyze a single image
+npm run command review-post ./path/to/image.png
+
+# Analyze with custom categories
+npm run command review-post ./path/to/image.png --categories ./my-categories.json
+```
+
+## New Enhanced Features
+
+### Improved Post Deduplication
+
+The system now uses multiple methods to prevent duplicate posts:
+
+1. **Platform Unique IDs**: Uses tweet IDs, LinkedIn activity IDs for reliable identification
+2. **Content Hashing**: SHA-256 hash of image content to detect same content across platforms
+3. **Legacy Description+URL**: Fallback method for compatibility
+
+### Unified Post Collection
+
+The new `gather-posts` command:
+- Captures screenshots from both Twitter and LinkedIn
+- Analyzes each post with AI to generate descriptions
+- Automatically stores posts in the database with ratings
+- Provides detailed results and error reporting
+- Handles authentication automatically
+
+### Database Features
+
+- **Enhanced Post Storage**: Includes platform info, unique IDs, content hashes, and local screenshot paths
+- **Rating System**: Rate posts 1-5 stars to build preference data
+- **Browse & List**: Easy browsing of collected posts with filtering
+- **Duplicate Prevention**: Smart deduplication across multiple collection sessions
+
+## Category Configuration
+
+Create a JSON file with your preferred categories:
+
+```json
+[
+  {
+    "name": "AI Coding",
+    "overview": "Posts about AI coding tools and frameworks",
+    "likedExamples": [
+      "New AI coding assistant features",
+      "AI debugging tools"
+    ],
+    "dislikedExamples": [
+      "Basic programming tutorials",
+      "Non-AI coding content"
+    ]
+  }
+]
+```
+
+## File Structure
+
+```
+~/.attn/                   # Default storage location
+  screenshots/             # Screenshot storage
+    twitter/               # Twitter screenshots
+    linkedin/              # LinkedIn screenshots
+  posts.json              # Post database (auto-created)
+./twitter-cookies.json     # Saved Twitter session (in project directory)
+./linkedin-cookies.json    # Saved LinkedIn session (in project directory)
+```
+
+## Example Workflow
+
+1. **Initial Setup**:
+   ```bash
+   npm run command login
+   ```
+
+2. **Collect Posts**:
+   ```bash
+   npm run command gather-posts --count 20
+   ```
+
+3. **Browse Collected Posts**:
+   ```bash
+   npm run command list-posts --count 10
+   ```
+
+4. **Rate Interesting Posts**:
+   ```bash
+   npm run command rate-post "twitter_1234567890_1234567890" 5
+   npm run command rate-post "linkedin_9876543210_1234567890" 3
+   ```
+
+5. **Collect More Posts**:
+   ```bash
+   npm run command gather-posts --count 10
+   # Duplicates will be automatically skipped
+   ```

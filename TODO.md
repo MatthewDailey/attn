@@ -19,7 +19,11 @@
 [x] agent to evaluate posts
   - could categorize (eg have /default /programming-memes)
 [x] local postdb (description, imageUrl, timestamp, rating) with 'list'
-[] loop to 
+[x] loop to gather from both
+  [x] unify storage to `~/.attn/screenshots/..` and `~/.attn/posts.json`
+  [] update logging to includ efull image links
+[] only include in DB if categorized and include category in db, allow querying based on hat
+[] web app for scrolling through content
 [] onboarding ux
   [] ensure API key is present
   [] do an initial scroll and open the home page

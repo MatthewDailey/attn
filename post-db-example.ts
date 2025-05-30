@@ -152,7 +152,7 @@ export function startRatingSession(): void {
   console.log(`Description: ${currentPost.description}`)
   console.log(`Platform: ${currentPost.platform}`)
   console.log(`Current rating: ${currentPost.rating || 'Unrated'}`)
-  console.log(`Image: ${currentPost.imageUrl}`)
+  console.log(`Image: ${currentPost.screenshotPath}`)
 
   // In a real implementation, you'd use readline or similar for user input
   // This is just a demonstration of the API
@@ -168,7 +168,7 @@ export function getPostsForDisplay(pageSize: number = 10, offset: number = 0) {
     posts: page.posts.map((post) => ({
       id: post.id,
       description: post.description,
-      imageUrl: post.imageUrl,
+      screenshotPath: post.screenshotPath,
       timestamp: post.timestamp.toISOString(),
       rating: post.rating,
       platform: post.platform,

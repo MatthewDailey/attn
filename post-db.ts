@@ -1,14 +1,18 @@
 import fs from 'fs'
 import path from 'path'
+import crypto from 'crypto'
+import os from 'os'
 
 export interface Post {
   id: string
   description: string
-  imageUrl: string
   timestamp: Date
   rating: number | null
   platform?: string
   originalPostId?: string
+  platformUniqueId?: string // Platform-specific unique identifier (tweet ID, LinkedIn activity ID, etc.)
+  contentHash?: string // Hash of image content for deduplication across platforms
+  screenshotPath: string // Local path to the screenshot file
 }
 
 interface PostDBData {
@@ -29,9 +33,22 @@ export class PostDB {
   private dbPath: string
   private data!: PostDBData
 
-  constructor(dbPath: string = './posts.json') {
+  constructor(dbPath: string = path.join(os.homedir(), '.attn', 'posts.json')) {
     this.dbPath = path.resolve(dbPath)
     this.loadDB()
+  }
+
+  /**
+   * Calculate content hash from an image file for deduplication
+   */
+  static calculateContentHash(imagePath: string): string {
+    try {
+      const imageBuffer = fs.readFileSync(imagePath)
+      return crypto.createHash('sha256').update(imageBuffer).digest('hex').substring(0, 16)
+    } catch (error) {
+      console.warn(`Failed to calculate content hash for ${imagePath}:`, error)
+      return ''
+    }
   }
 
   private loadDB(): void {
@@ -90,19 +107,45 @@ export class PostDB {
   /**
    * Generate a unique ID for a post based on its content
    */
-  private generatePostId(description: string, imageUrl: string, platform?: string): string {
-    // Create a hash-like ID from description + imageUrl + platform
-    const content = `${description.slice(0, 100)}_${imageUrl}_${platform || 'unknown'}`
+  private generatePostId(
+    description: string,
+    screenshotPath: string,
+    platform?: string,
+    platformUniqueId?: string,
+  ): string {
+    // If we have a platform-specific unique ID, use that as the base
+    if (platformUniqueId && platform) {
+      return `${platform.toLowerCase()}_${platformUniqueId}_${Date.now()}`
+    }
+
+    // Fallback to content-based ID
+    const content = `${description.slice(0, 100)}_${screenshotPath}_${platform || 'unknown'}`
     return content.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 50) + '_' + Date.now()
   }
 
   /**
-   * Check if a post already exists based on description and imageUrl
+   * Check if a post already exists based on platform unique ID or content
    */
-  private postExists(description: string, imageUrl: string): boolean {
-    return this.data.posts.some(
-      (post) => post.description === description && post.imageUrl === imageUrl,
-    )
+  private postExists(
+    description: string,
+    screenshotPath: string,
+    platformUniqueId?: string,
+    contentHash?: string,
+  ): boolean {
+    return this.data.posts.some((post) => {
+      // First check platform-specific unique ID (most reliable)
+      if (platformUniqueId && post.platformUniqueId) {
+        return post.platformUniqueId === platformUniqueId
+      }
+
+      // Then check content hash (for screenshots of same content)
+      if (contentHash && post.contentHash) {
+        return post.contentHash === contentHash
+      }
+
+      // Fallback to description and screenshotPath (legacy check)
+      return post.description === description && post.screenshotPath === screenshotPath
+    })
   }
 
   /**
@@ -110,25 +153,29 @@ export class PostDB {
    */
   addPost(
     description: string,
-    imageUrl: string,
+    screenshotPath: string,
     rating: number | null = null,
     platform?: string,
     originalPostId?: string,
+    platformUniqueId?: string,
+    contentHash?: string,
   ): string | null {
     // Check for duplicates
-    if (this.postExists(description, imageUrl)) {
+    if (this.postExists(description, screenshotPath, platformUniqueId, contentHash)) {
       console.log('Post already exists, skipping duplicate')
       return null
     }
 
     const post: Post = {
-      id: this.generatePostId(description, imageUrl, platform),
+      id: this.generatePostId(description, screenshotPath, platform, platformUniqueId),
       description,
-      imageUrl,
       timestamp: new Date(),
       rating,
       platform,
       originalPostId,
+      platformUniqueId,
+      contentHash,
+      screenshotPath,
     }
 
     // Add to the end of the array (most recent)
