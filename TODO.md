@@ -24,7 +24,9 @@
   [] update logging to includ efull image links
 [x] only include in DB if categorized and include category in db, allow querying based on hat
 [x] web app for scrolling through content
-[] i think need to change tabs in browser when witching
+[x] allow runnning dev on a specific dir to look at prior browses
+[] need to change tabs in browser when starting to read that one
+[] have linkedin scroll so top of target node is at 60px from top
 [] use the likes and dislikes in filtering
 [] ability to mark a post as viewed (eg inbox 0 it)
 [] onboarding ux

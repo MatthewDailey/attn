@@ -590,54 +590,8 @@ yargs(hideBin(process.argv))
           }
           console.log('-'.repeat(50))
         })
-
-        console.log('\n💡 Use "rate-post <id> <rating>" to rate posts (1-5)')
       } catch (error) {
         console.error('❌ Failed to list posts:', error)
-        process.exit(1)
-      }
-    },
-  )
-  .command(
-    'rate-post <postId> <rating>',
-    'Rate a post by its ID',
-    (yargs) => {
-      return yargs
-        .positional('postId', {
-          describe: 'ID of the post to rate',
-          type: 'string',
-          demandOption: true,
-        })
-        .positional('rating', {
-          describe: 'Rating (1-5)',
-          type: 'number',
-          demandOption: true,
-        })
-        .option('db-path', {
-          alias: 'd',
-          describe: 'Path to the database file',
-          type: 'string',
-          default: path.join(os.homedir(), '.attn', 'posts.json'),
-        })
-    },
-    async (argv) => {
-      try {
-        if (argv.rating < 1 || argv.rating > 5) {
-          console.error('❌ Rating must be between 1 and 5')
-          process.exit(1)
-        }
-
-        const postDB = new PostDB(argv.dbPath)
-        const success = postDB.updateRating(argv.postId, argv.rating)
-
-        if (success) {
-          console.log(`✅ Successfully rated post ${argv.postId} with ${argv.rating} stars`)
-        } else {
-          console.error(`❌ Post with ID ${argv.postId} not found`)
-          process.exit(1)
-        }
-      } catch (error) {
-        console.error('❌ Failed to rate post:', error)
         process.exit(1)
       }
     },
