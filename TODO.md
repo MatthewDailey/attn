@@ -10,15 +10,20 @@
 
 # todo
 [x] login script to open browser and save cookies
-[] fn to scroll a page and gather posts from twitter scrollAndGatherTwitter(page)
-  - find next <article> tag, scroll it to ivew
+[x] fn to scroll a page and gather posts from twitter scrollAndGatherTwitter(page)
+  - find next <article> tag, scroll it to view
   - screenshot the tag, have google look at it and describe what it is and evaluate if it should be shown (or added to a category), save image if i might want to see
-[] fn to scroll and gather posts from linkedin scrollAndGatherLinkedin(page)
+[x] fn to scroll and gather posts from linkedin scrollAndGatherLinkedin(page)
   - text inside div with data-id="urn:li:activity:7333910771602530322"
+  - refactored with shared logic in social-media-utils.ts for extensibility
 [] local postdb (description, imageUrl, timestamp, rating) with 'list'
 [x] agent to evaluate posts
   - could categorize (eg have /default /programming-memes)
 [] loop to 
+[] onboarding ux
+  [] ensure API key is present
+  [] do an initial scroll and open the home page
+  [] 
 
 
 

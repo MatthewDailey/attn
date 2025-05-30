@@ -64,22 +64,30 @@ This project includes functionality for automating interactions with social medi
    npm run cli twitter-screenshots 10 ./my-screenshots  # Custom directory
    ```
 
-3. **Review social media posts with AI**:
+3. **Capture LinkedIn screenshots**:
+   ```bash
+   npm run cli linkedin-screenshots 5       # Capture 5 posts
+   npm run cli linkedin-screenshots 10 ./my-linkedin-screenshots  # Custom directory
+   ```
+
+4. **Review social media posts with AI**:
    ```bash
    npm run cli review-post ./path/to/image.png
    npm run cli review-post ./screenshot.jpg --categories ./my-categories.json
    ```
 
-4. **Check login status**:
+5. **Check login status**:
    ```bash
    npm run cli status
    ```
 
-### Twitter Screenshot Capture
+### Social Media Screenshot Capture
 
-The `scrollAndGatherTwitter` function allows you to automatically scroll through Twitter's home page and capture screenshots of individual posts.
+The project includes refactored functions `scrollAndGatherTwitter` and `scrollAndGatherLinkedin` that allow you to automatically scroll through social media feeds and capture screenshots of individual posts. Both functions share common logic while handling platform-specific differences.
 
-#### CLI Usage (Recommended)
+#### Twitter Screenshots
+
+##### CLI Usage (Recommended)
 
 ```bash
 # Capture 10 Twitter posts (default)
@@ -95,7 +103,7 @@ npm run cli twitter-screenshots 10 ./my-screenshots
 npm run cli twitter-screenshots --help
 ```
 
-#### Programmatic Usage
+##### Programmatic Usage
 
 ```typescript
 import { SocialAuth } from './social-auth.js'
@@ -109,36 +117,82 @@ await pages.withTwitter(async (page) => {
 })
 ```
 
-#### Parameters
+#### LinkedIn Screenshots
+
+##### CLI Usage (Recommended)
+
+```bash
+# Capture 10 LinkedIn posts (default)
+npm run cli linkedin-screenshots
+
+# Capture specific number of posts
+npm run cli linkedin-screenshots 5
+
+# Specify custom directory
+npm run cli linkedin-screenshots 10 ./my-linkedin-screenshots
+
+# Get help
+npm run cli linkedin-screenshots --help
+```
+
+##### Programmatic Usage
+
+```typescript
+import { SocialAuth } from './social-auth.js'
+import { scrollAndGatherLinkedin } from './linkedin-utils.js'
+
+const socialAuth = new SocialAuth()
+const pages = await socialAuth.startBrowser()
+
+await pages.withLinkedin(async (page) => {
+  await scrollAndGatherLinkedin(page, './screenshots', 10)
+})
+```
+
+#### Parameters (Both Platforms)
 
 - `count`: Number of posts to capture screenshots of (default: 10)
-- `directory`: Directory path where screenshots will be saved (default: './twitter-screenshots')
+- `directory`: Directory path where screenshots will be saved (default: './twitter-screenshots' or './linkedin-screenshots')
 
 #### Features
 
-- 📸 Automatically captures screenshots of individual Twitter posts
-- 🔄 Scrolls through the feed to find more posts
-- 🎯 Avoids duplicate captures using unique post identifiers
-- 📁 Creates output directory if it doesn't exist
-- ⚡ Includes fallback method for different Twitter layouts
-- 🛡️ Error handling and retry logic
-- 🔐 Uses existing authentication system (no manual login required)
-- 📖 **Auto-expands truncated content** - Automatically clicks "Show More" links to capture full tweets
+- 📸 **Cross-platform support**: Works with both Twitter and LinkedIn
+- 🔄 **Scrolls through feeds**: Automatically scrolls to find more posts
+- 🎯 **Avoids duplicates**: Uses unique post identifiers to prevent duplicate captures
+- 📁 **Auto-creates directories**: Creates output directory if it doesn't exist
+- ⚡ **Fallback selectors**: Includes multiple methods for finding posts on different layouts
+- 🛡️ **Error handling**: Robust error handling and retry logic
+- 🔐 **Authenticated sessions**: Uses existing authentication system (no manual login required)
+- 📖 **Auto-expands content**: Automatically clicks "Show More" links to capture full posts
+- 🏗️ **Extensible architecture**: Easy to add support for additional social media platforms
+
+#### Platform-Specific Details
+
+**Twitter**:
+- Identifies posts using `article[data-testid="tweet"]` selector
+- Extracts unique IDs from tweet status URLs
+- Handles "Show more" expansion for long tweets
+
+**LinkedIn**:
+- Identifies posts using `div[data-id^="urn:li:activity:"]` selector
+- Extracts unique IDs from LinkedIn activity URNs
+- Handles "see more" expansion for long posts
 
 #### Requirements
 
-- You must be logged into Twitter using `npm run cli login`
+- You must be logged into the respective platform using `npm run cli login`
 - The authentication system will handle cookies and session management
 
 ### Available CLI Commands
 
 ```bash
-npm run cli login                    # Login to Twitter and LinkedIn
-npm run cli status                   # Check current login status
-npm run cli logout                   # Clear saved authentication
-npm run cli browser                  # Start authenticated browser session
-npm run cli twitter-screenshots     # Capture Twitter post screenshots
-npm run cli review-post <imagePath>  # Analyze social media post with AI
+npm run cli login                     # Login to Twitter and LinkedIn
+npm run cli status                    # Check current login status
+npm run cli logout                    # Clear saved authentication
+npm run cli browser                   # Start authenticated browser session
+npm run cli twitter-screenshots      # Capture Twitter post screenshots
+npm run cli linkedin-screenshots     # Capture LinkedIn post screenshots  
+npm run cli review-post <imagePath>   # Analyze social media post with AI
 ```
 
 ### Social Authentication
@@ -155,6 +209,11 @@ const pages = await socialAuth.startBrowser()  // Returns authenticated pages
 // Use Twitter page
 await pages.withTwitter(async (page) => {
   await scrollAndGatherTwitter(page, './screenshots', 5)
+})
+
+// Use LinkedIn page  
+await pages.withLinkedin(async (page) => {
+  await scrollAndGatherLinkedin(page, './screenshots', 5)
 })
 ```
 

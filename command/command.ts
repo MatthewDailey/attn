@@ -6,6 +6,7 @@ import yargs from 'yargs'
 import { hideBin } from 'yargs/helpers'
 import { SocialAuth } from '../social-auth.js'
 import { scrollAndGatherTwitter } from '../twitter-utils.js'
+import { scrollAndGatherLinkedin } from '../linkedin-utils.js'
 import { reviewSocialPost } from '../social-post-reviewer.js'
 import type { Category } from '../social-post-reviewer.js'
 import path from 'path'
@@ -113,6 +114,70 @@ yargs(hideBin(process.argv))
         console.log('🔄 Process completed! You can now close the browser window.')
       } catch (error) {
         console.error('Twitter screenshot capture failed:', error)
+        process.exit(1)
+      }
+    },
+  )
+  .command(
+    'linkedin-screenshots [count] [directory]',
+    'Capture screenshots of LinkedIn posts',
+    (yargs) => {
+      return yargs
+        .positional('count', {
+          describe: 'Number of posts to capture',
+          type: 'number',
+          default: 10,
+        })
+        .positional('directory', {
+          describe: 'Directory to save screenshots',
+          type: 'string',
+          default: './linkedin-screenshots',
+        })
+    },
+    async (argv) => {
+      try {
+        const loginStatus = socialAuth.isLoggedIn()
+
+        // Login to LinkedIn if needed
+        if (!loginStatus.linkedin) {
+          console.log('💼 Need to login to LinkedIn first...')
+          await socialAuth.login()
+        }
+
+        // Start browser with authenticated session
+        console.log('🌐 Starting browser with authenticated LinkedIn session...')
+        const pages = await socialAuth.startBrowser()
+
+        // Use the authenticated LinkedIn page
+        await pages.withLinkedin(async (page) => {
+          console.log('💼 Using authenticated LinkedIn page...')
+          const title = await page.title()
+          console.log('LinkedIn page title:', title)
+
+          // Wait a moment for the page to fully load
+          console.log('⏳ Waiting for page to fully load...')
+          await new Promise((resolve) => setTimeout(resolve, 3000))
+
+          // Set up screenshot directory
+          const screenshotDir = path.resolve(argv.directory)
+          const numPostsToCapture = argv.count
+
+          console.log(`📸 Capturing ${numPostsToCapture} LinkedIn posts to ${screenshotDir}...`)
+
+          try {
+            // Try the main function first
+            await scrollAndGatherLinkedin(page, screenshotDir, numPostsToCapture)
+          } catch (error) {
+            console.warn('⚠️ Main function failed, trying alternative method...')
+            console.error('Main error:', error)
+          }
+
+          console.log('✅ Screenshot capture completed!')
+        })
+
+        console.log('🔄 Process completed! You can now close the browser window.')
+      } catch (error) {
+        console.error('LinkedIn screenshot capture failed:', error)
         process.exit(1)
       }
     },
