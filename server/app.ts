@@ -15,7 +15,7 @@ export async function createApp() {
   console.log('isDev', isDev)
 
   // Initialize PostDB
-  const postDB = new PostDB()
+  const postDB = new PostDB(process.env.ATTN_DB_PATH)
 
   app.use(
     '/api',
@@ -119,13 +119,47 @@ export async function createApp() {
   // Serve screenshot images
   app.get('/api/screenshots/*', (req, res) => {
     try {
-      const imagePath = req.url.replace('/api/screenshots/', '')
-      const fullPath = path.resolve(imagePath)
+      // Decode the URL-encoded path
+      const imagePath = decodeURIComponent(req.url.replace('/api/screenshots/', ''))
 
-      // Security check - ensure the path is within expected directories
-      if (!fs.existsSync(fullPath)) {
-        return res.status(404).json({ error: 'Image not found' })
+      // Handle different types of paths
+      let fullPath: string
+
+      if (path.isAbsolute(imagePath)) {
+        // If it's already an absolute path, use it directly
+        fullPath = imagePath
+      } else {
+        // If it's a relative path, resolve it from the current working directory
+        fullPath = path.resolve(imagePath)
       }
+
+      // Security check - ensure the file exists and is readable
+      if (!fs.existsSync(fullPath)) {
+        console.log(`Screenshot not found: ${fullPath}`)
+        return res.status(404).json({ error: 'Screenshot not found', path: imagePath })
+      }
+
+      // Additional security check - ensure it's an image file
+      const ext = path.extname(fullPath).toLowerCase()
+      if (!['.png', '.jpg', '.jpeg', '.gif', '.webp'].includes(ext)) {
+        console.log(`Invalid file type requested: ${fullPath}`)
+        return res.status(400).json({ error: 'Invalid file type' })
+      }
+
+      // Set appropriate content type
+      const contentType =
+        ext === '.png'
+          ? 'image/png'
+          : ext === '.jpg' || ext === '.jpeg'
+            ? 'image/jpeg'
+            : ext === '.gif'
+              ? 'image/gif'
+              : ext === '.webp'
+                ? 'image/webp'
+                : 'image/png'
+
+      res.setHeader('Content-Type', contentType)
+      res.setHeader('Cache-Control', 'public, max-age=3600') // Cache for 1 hour
 
       res.sendFile(fullPath)
     } catch (error) {

@@ -15,11 +15,13 @@ This update implements category-based filtering for social media posts, ensuring
 ### 2. New Query Methods
 
 #### Category Filtering
+
 - `getPostsByCategory(category: string)` - Get all posts for a specific category
 - `getAllCategories()` - Get list of all unique categories in the database
 - `getPostsByCategory_Paginated(category, pageSize, page)` - Paginated category results
 
 #### Enhanced Statistics
+
 - `getStats()` now includes `categoryBreakdown` showing post counts per category
 
 ### 3. Post Gatherer Updates (`social-post-gatherer.ts`)
@@ -63,7 +65,7 @@ const postId = db.addPost(
   undefined, // originalPostId
   undefined, // platformUniqueId
   undefined, // contentHash
-  'AI Coding' // category - this is the new parameter
+  'AI Coding', // category - this is the new parameter
 )
 ```
 
@@ -78,12 +80,14 @@ console.log(stats.categoryBreakdown)
 ## Filtering Behavior
 
 ### In the Post Gatherer
+
 - Posts are analyzed using AI to determine their category
 - **Only posts that match one of the provided categories are stored**
 - Posts with `categoryName: null` are automatically filtered out
 - This ensures the database only contains relevant, categorized content
 
 ### Benefits
+
 1. **Quality Control**: Only relevant posts make it into the database
 2. **Organization**: Posts are automatically categorized for easy filtering
 3. **Efficiency**: No need to manually filter out irrelevant content later
@@ -114,8 +118,9 @@ npx tsx category-example.ts
 ```
 
 This will demonstrate:
+
 - Adding posts with different categories
 - Querying posts by category
 - Getting all available categories
 - Paginated category results
-- Statistics with category breakdown 
+- Statistics with category breakdown

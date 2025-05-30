@@ -369,6 +369,173 @@ yargs(hideBin(process.argv))
     },
   )
   .command(
+    'browse-and-serve [count]',
+    'Browse N posts from both platforms and start web server to view them',
+    (yargs) => {
+      return yargs
+        .positional('count', {
+          describe: 'Number of posts to gather from each platform',
+          type: 'number',
+          default: 10,
+        })
+        .option('categories', {
+          alias: 'C',
+          describe: 'Path to JSON file containing categories (optional)',
+          type: 'string',
+        })
+        .option('port', {
+          alias: 'p',
+          describe: 'Port for the web server',
+          type: 'number',
+          default: 8080,
+        })
+    },
+    async (argv) => {
+      try {
+        const loginStatus = socialAuth.isLoggedIn()
+
+        // Login to both platforms if needed
+        if (!loginStatus.linkedin) {
+          console.log('💼 Need to login to LinkedIn first...')
+          await socialAuth.login()
+        }
+        if (!loginStatus.twitter) {
+          console.log('📱 Need to login to Twitter first...')
+          await socialAuth.login()
+        }
+
+        // Generate unique session ID
+        const sessionId =
+          new Date().toISOString().replace(/[:.]/g, '-') +
+          '-' +
+          Math.random().toString(36).substr(2, 9)
+        console.log(`🆔 Starting session: ${sessionId}`)
+
+        // Create session directory structure
+        const sessionDir = path.join(os.homedir(), '.attn', 'tmp', sessionId)
+        const screenshotDir = path.join(sessionDir, 'screenshots')
+        const twitterScreenshotDir = path.join(screenshotDir, 'twitter')
+        const linkedinScreenshotDir = path.join(screenshotDir, 'linkedin')
+        const dbPath = path.join(sessionDir, 'posts.json')
+
+        // Create directories
+        console.log(`📁 Creating session directories in ${sessionDir}...`)
+        const fs = await import('fs')
+        fs.mkdirSync(twitterScreenshotDir, { recursive: true })
+        fs.mkdirSync(linkedinScreenshotDir, { recursive: true })
+
+        // Start browser with authenticated session
+        console.log('🌐 Starting browser with authenticated platforms...')
+        const pages = await socialAuth.startBrowser()
+
+        // Use the authenticated platforms to gather posts
+        await pages.withTwitter(async (twitterPage) => {
+          console.log('📱 Using authenticated Twitter page...')
+          const twitterTitle = await twitterPage.title()
+          console.log('Twitter page title:', twitterTitle)
+
+          await pages.withLinkedin(async (linkedinPage) => {
+            console.log('💼 Using authenticated LinkedIn page...')
+            const linkedinTitle = await linkedinPage.title()
+            console.log('LinkedIn page title:', linkedinTitle)
+
+            // Wait a moment for the pages to fully load
+            console.log('⏳ Waiting for pages to fully load...')
+            await new Promise((resolve) => setTimeout(resolve, 3000))
+
+            // Load custom categories if provided
+            let categories = undefined
+            if (argv.categories) {
+              try {
+                const categoriesJson = fs.readFileSync(argv.categories, 'utf-8')
+                categories = JSON.parse(categoriesJson)
+                console.log(
+                  `📂 Loaded ${categories.length} custom categories from ${argv.categories}`,
+                )
+              } catch (error) {
+                console.warn(
+                  `⚠️ Could not load categories from ${argv.categories}, using default categories`,
+                )
+              }
+            }
+
+            const numPostsToGather = argv.count
+
+            console.log(
+              `📸 Gathering ${numPostsToGather} posts from both platforms to ${screenshotDir}...`,
+            )
+
+            try {
+              const result = await gatherAndStorePosts(twitterPage, linkedinPage, {
+                numPosts: numPostsToGather,
+                screenshotDir,
+                dbPath,
+                categories,
+                platforms: ['twitter', 'linkedin'],
+              })
+
+              console.log('\n📊 Gathering Results:')
+              console.log('='.repeat(50))
+              console.log(`📸 Total posts captured: ${result.totalPostsGathered}`)
+              console.log(`💾 Total posts added to database: ${result.totalPostsAddedToDb}`)
+              console.log(`📁 Screenshots saved to: ${result.screenshotDir}`)
+              console.log(`🗃️ Database: ${dbPath}`)
+
+              for (const platformResult of result.platformResults) {
+                console.log(`\n${platformResult.platform.toUpperCase()}:`)
+                console.log(`  📸 Posts captured: ${platformResult.postsGathered}`)
+                console.log(`  💾 Posts added to DB: ${platformResult.postsAddedToDb}`)
+                if (platformResult.errors.length > 0) {
+                  console.log(`  ❌ Errors: ${platformResult.errors.length}`)
+                  platformResult.errors.forEach((error) => console.log(`    - ${error}`))
+                }
+              }
+              console.log('='.repeat(50))
+            } catch (error) {
+              console.warn('⚠️ Post gathering failed:', error)
+            }
+
+            console.log('✅ Posts gathering completed!')
+          })
+        })
+
+        // Now start the web server with the session database
+        console.log(`🚀 Starting web server on port ${argv.port}...`)
+
+        // Import and start the server
+        const { createApp } = await import('../server/app.js')
+
+        // Set environment variable to use the session database
+        process.env.ATTN_DB_PATH = dbPath
+
+        const app = await createApp()
+
+        const server = app.listen(argv.port, () => {
+          console.log(`🌐 Web server running at http://localhost:${argv.port}`)
+          console.log(`📊 Session ID: ${sessionId}`)
+          console.log(`📂 Database: ${dbPath}`)
+          console.log('👀 Open your browser to view and rate the posts!')
+          console.log('🛑 Press Ctrl+C to stop the server')
+        })
+
+        // Handle graceful shutdown
+        process.on('SIGINT', () => {
+          console.log('\n🛑 Shutting down server...')
+          server.close(() => {
+            console.log('✅ Server closed.')
+            process.exit(0)
+          })
+        })
+
+        // Keep the process alive
+        await new Promise(() => {})
+      } catch (error) {
+        console.error('❌ Failed to browse and serve:', error)
+        process.exit(1)
+      }
+    },
+  )
+  .command(
     'list-posts',
     'List posts from the database',
     (yargs) => {

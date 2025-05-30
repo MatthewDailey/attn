@@ -139,6 +139,16 @@ body {
   word-wrap: break-word;
 }
 
+.description.fallback {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 1rem;
+  font-style: italic;
+  color: #6c757d;
+  text-align: center;
+}
+
 .screenshot {
   max-width: 100%;
   height: auto;

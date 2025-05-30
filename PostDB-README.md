@@ -37,10 +37,7 @@ const db = new PostDB('./my-posts.json')
 
 ```typescript
 // Basic post
-const postId = db.addPost(
-  'Great article about AI coding tools',
-  '/path/to/screenshot.png'
-)
+const postId = db.addPost('Great article about AI coding tools', '/path/to/screenshot.png')
 
 // With all optional fields
 const postId = db.addPost(
@@ -48,7 +45,7 @@ const postId = db.addPost(
   '/screenshots/linkedin_post.png',
   8, // initial rating
   'linkedin', // platform
-  'urn:li:activity:123456' // original post ID
+  'urn:li:activity:123456', // original post ID
 )
 ```
 
@@ -71,9 +68,9 @@ const page = db.getPosts(10)
 console.log(`Showing ${page.posts.length} of ${page.totalPosts} posts`)
 
 // Navigate through the feed
-db.moveForward(5)  // Move 5 posts forward
+db.moveForward(5) // Move 5 posts forward
 db.moveBackward(2) // Move 2 posts back
-db.goToIndex(0)    // Go to specific index
+db.goToIndex(0) // Go to specific index
 
 // Get posts with offset from current position
 const nextPage = db.getPosts(10, 5) // 10 posts, 5 positions ahead
@@ -122,7 +119,7 @@ import { processPostScreenshot } from './post-db-example.js'
 const postId = await processPostScreenshot(
   './screenshots/twitter_post_1.png',
   'twitter',
-  'tweet_123456789'
+  'tweet_123456789',
 )
 
 // Process an entire directory
@@ -148,14 +145,17 @@ if (result.success) {
 ### PostDB Class
 
 #### Constructor
+
 - `new PostDB(dbPath?: string)` - Initialize database with optional custom path
 
 #### Adding and Updating Posts
+
 - `addPost(description, imageUrl, rating?, platform?, originalPostId?)` - Add new post, returns postId or null if duplicate
 - `updateRating(postId, rating)` - Update post rating (1-10), returns boolean success
 - `deletePost(postId)` - Delete a post, returns boolean success
 
 #### Navigation
+
 - `getPosts(pageSize?, offsetFromCurrent?)` - Get paginated posts around current position
 - `moveForward(steps?)` - Move forward in feed, returns boolean success
 - `moveBackward(steps?)` - Move backward in feed, returns boolean success
@@ -163,6 +163,7 @@ if (result.success) {
 - `getCurrentPosition()` - Get current position info
 
 #### Querying
+
 - `getPost(postId)` - Get specific post by ID
 - `getAllPosts()` - Get all posts sorted by timestamp
 - `getPostsByRating(rating)` - Filter posts by rating
@@ -170,11 +171,13 @@ if (result.success) {
 - `getStats()` - Get database statistics
 
 #### Admin
+
 - `clearAll()` - Clear all posts (use with caution)
 
 ### Data Types
 
 #### Post Interface
+
 ```typescript
 interface Post {
   id: string
@@ -188,6 +191,7 @@ interface Post {
 ```
 
 #### PaginatedResult Interface
+
 ```typescript
 interface PaginatedResult {
   posts: Post[]
@@ -209,7 +213,7 @@ const db = new PostDB('./social-posts.json')
 await processScreenshotDirectory('./screenshots/today')
 
 // Start rating session
-const unratedPosts = db.getAllPosts().filter(p => p.rating === null)
+const unratedPosts = db.getAllPosts().filter((p) => p.rating === null)
 console.log(`${unratedPosts.length} posts to review`)
 
 // Navigate and rate posts
@@ -224,7 +228,8 @@ for (const post of unratedPosts.slice(0, 10)) {
 ### 2. Export Highly Rated Posts
 
 ```typescript
-const highRatedPosts = db.getPostsByRating(8)
+const highRatedPosts = db
+  .getPostsByRating(8)
   .concat(db.getPostsByRating(9))
   .concat(db.getPostsByRating(10))
 
@@ -237,10 +242,12 @@ console.log(`Found ${highRatedPosts.length} highly rated posts`)
 ```typescript
 const stats = db.getStats()
 Object.entries(stats.platformBreakdown).forEach(([platform, count]) => {
-  const avgRating = db.getPostsByPlatform(platform)
-    .filter(p => p.rating !== null)
-    .reduce((sum, p) => sum + p.rating!, 0) / count
-  
+  const avgRating =
+    db
+      .getPostsByPlatform(platform)
+      .filter((p) => p.rating !== null)
+      .reduce((sum, p) => sum + p.rating!, 0) / count
+
   console.log(`${platform}: ${count} posts, avg rating: ${avgRating.toFixed(1)}`)
 })
 ```
@@ -254,6 +261,7 @@ npm test post-db.test.ts
 ```
 
 The tests cover:
+
 - Database creation and persistence
 - Adding posts and duplicate prevention
 - Pagination and navigation
@@ -275,4 +283,4 @@ The tests cover:
 - Posts are ordered by discovery time (when added to database)
 - The current index pointer is persisted across sessions
 - Duplicate detection is based on exact match of description and imageUrl
-- All timestamps are stored as ISO strings in JSON but converted to Date objects in memory 
+- All timestamps are stored as ISO strings in JSON but converted to Date objects in memory

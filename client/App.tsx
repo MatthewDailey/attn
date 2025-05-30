@@ -197,8 +197,7 @@ function App() {
             </div>
 
             <div className="post-content">
-              <p className="description">{post.description}</p>
-              {post.screenshotPath && (
+              {post.screenshotPath ? (
                 <img
                   src={`/api/screenshots/${encodeURIComponent(post.screenshotPath)}`}
                   alt="Post screenshot"
@@ -206,8 +205,17 @@ function App() {
                   onError={(e) => {
                     const target = e.target as HTMLImageElement
                     target.style.display = 'none'
+                    // Show description as fallback when screenshot fails to load
+                    const fallbackDiv = document.createElement('div')
+                    fallbackDiv.className = 'description fallback'
+                    fallbackDiv.textContent = post.description
+                    target.parentNode?.appendChild(fallbackDiv)
                   }}
                 />
+              ) : (
+                <p className="description fallback">
+                  No screenshot available. Original text: {post.description}
+                </p>
               )}
             </div>
 

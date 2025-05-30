@@ -22,13 +22,15 @@
 [x] loop to gather from both
   [x] unify storage to `~/.attn/screenshots/..` and `~/.attn/posts.json`
   [] update logging to includ efull image links
-[] only include in DB if categorized and include category in db, allow querying based on hat
-[] web app for scrolling through content
+[x] only include in DB if categorized and include category in db, allow querying based on hat
+[x] web app for scrolling through content
+[] i think need to change tabs in browser when witching
+[] use the likes and dislikes in filtering
+[] ability to mark a post as viewed (eg inbox 0 it)
 [] onboarding ux
   [] ensure API key is present
   [] do an initial scroll and open the home page
-[] ability to mark a post as viewed (eg inbox 0 it)
-[] ngrok tunnel to view from phone
+[] ngrok tunnel to view from phone (is there a JS package i can just include?)
 
 its okay if there are no interesting posts
 
