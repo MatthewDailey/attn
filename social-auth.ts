@@ -1,6 +1,11 @@
-import puppeteer, { Browser, Page, type Cookie } from 'puppeteer'
+import puppeteer from 'puppeteer-extra'
+import StealthPlugin from 'puppeteer-extra-plugin-stealth'
+import { Browser, Page, type Cookie } from 'puppeteer'
 import fs from 'fs'
 import path from 'path'
+
+// Use stealth plugin
+puppeteer.use(StealthPlugin())
 
 export interface SocialPages {
   withLinkedin: (callback: (page: Page) => Promise<void> | void) => Promise<void>
@@ -180,7 +185,7 @@ export class SocialAuth {
    */
   async startBrowser(): Promise<SocialPages> {
     const browser = await puppeteer.launch({
-      headless: false,
+      headless: true,
       defaultViewport: null,
       args: ['--start-maximized'],
     })
