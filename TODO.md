@@ -11,6 +11,41 @@
 # todo
 [x] login script to open browser and save cookies
 [] fn to scroll a page and gather posts from twitter scrollAndGatherTwitter(page)
+  - find next <article> tag, scroll it to ivew
+  - screenshot the tag, have google look at it and describe what it is and evaluate if it should be shown (or added to a category), save image if i might want to see
 [] fn to scroll and gather posts from linkedin scrollAndGatherLinkedin(page)
+  - text inside div with data-id="urn:li:activity:7333910771602530322"
+[] local postdb (description, imageUrl, timestamp, rating) with 'list'
 [] agent to evaluate posts
+  - could categorize (eg have /default /programming-memes)
 [] loop to 
+
+
+
+```
+its okay if there are no interesting posts
+
+thing i like:
+- building cool stuff with ai
+- new AI models, especially related to ai coding
+- ai agent developers
+- ai coding tools
+
+things i don't like:
+- fund raising posts
+- job updates
+- recruiting posts
+- political content
+```
+
+
+twitter
+- text inside  tag
+  - find contained user avatar position, click just below user avatar to get tweet link. go back to feed
+  - open new page to https://publish.twitter.com/?query=https://x.com/tdinh_me/status/1928072926038794267&widget=Tweet
+  - read from <code class="EmbedCode-code">..
+
+li:
+  - find child button with aria-label="Open control menu ..."
+  [] link to embed
+  <iframe src="https://www.linkedin.com/embed/feed/update/urn:li:share:7333894278835838976" height="1322" width="504" frameborder="0" allowfullscreen="" title="Embedded post"></iframe>
