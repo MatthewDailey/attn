@@ -4,13 +4,16 @@
   "scripts": {
     "build": "vite build",
     "start": "NODE_ENV=production tsx server/index.ts",
-    "dev": "tsx watch server/index.ts",
+    "dev": "concurrently \"tsx watch server/index.ts\" \"vite --port 3000\"",
+    "dev:server": "tsx watch server/index.ts",
+    "dev:client": "vite --port 3000",
     "cli": "tsx command/command.ts",
     "deploy": "railway up",
     "test": "vitest run",
     "format": "prettier --write .",
     "check": "tsc --noEmit",
-    "pre-commit": "npm run check"
+    "pre-commit": "npm run check",
+    "demo": "tsx demo-posts.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.10",

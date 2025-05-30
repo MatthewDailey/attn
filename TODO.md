@@ -27,6 +27,7 @@
 [] onboarding ux
   [] ensure API key is present
   [] do an initial scroll and open the home page
+[] ability to mark a post as viewed (eg inbox 0 it)
 [] ngrok tunnel to view from phone
 
 its okay if there are no interesting posts
