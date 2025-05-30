@@ -32,14 +32,13 @@ export async function createApp() {
     return res.send('pong')
   })
 
-  // Get posts with pagination around current position
+  // Get all posts
   app.get('/api/posts', (req, res) => {
     try {
-      const pageSize = parseInt(req.query.pageSize as string) || 10
-      const offsetFromCurrent = parseInt(req.query.offset as string) || 0
-
-      const result = postDB.getPosts(pageSize, offsetFromCurrent)
-      res.json(result)
+      // Get all posts by using a very large page size and 0 offset
+      const result = postDB.getPosts(10000, 0)
+      // Return just the posts array instead of pagination metadata
+      res.json(result.posts)
     } catch (error) {
       console.error('Error getting posts:', error)
       res.status(500).json({ error: 'Failed to get posts' })
