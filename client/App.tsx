@@ -45,22 +45,30 @@ function App() {
   }, [])
 
   // Update post rating
-  const updateRating = useCallback(async (postId: string, rating: number) => {
-    try {
-      const response = await fetch(`/api/posts/${postId}/rating`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating }),
-      })
+  const updateRating = useCallback(
+    async (postId: string, rating: number) => {
+      const currentPost = posts.find((post) => post.id === postId)
+      const newRating = currentPost?.rating === rating ? null : rating
 
-      if (!response.ok) throw new Error('Failed to update rating')
+      try {
+        const response = await fetch(`/api/posts/${postId}/rating`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rating: newRating }),
+        })
 
-      // Update local state
-      setPosts((prev) => prev.map((post) => (post.id === postId ? { ...post, rating } : post)))
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update rating')
-    }
-  }, [])
+        if (!response.ok) throw new Error('Failed to update rating')
+
+        // Update local state
+        setPosts((prev) =>
+          prev.map((post) => (post.id === postId ? { ...post, rating: newRating } : post)),
+        )
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to update rating')
+      }
+    },
+    [posts],
+  )
 
   // Save scroll position before page unload
   useEffect(() => {
@@ -157,7 +165,7 @@ function App() {
 
       <div className="feed">
         {filterPosts(selectedCategory, selectedPlatform).map((post) => (
-          <div key={post.id} className="post">
+          <div key={post.id} className={`post ${post.rating === -1 ? 'post-thumbs-down' : ''}`}>
             <div className="post-header">
               <div className="post-meta">
                 <div className="platform">{getPlatformIcon(post.platform || 'default')}</div>
@@ -166,19 +174,14 @@ function App() {
               </div>
               <div className="post-actions">
                 <button
-                  className={`rating-btn thumbs-up ${post.rating === 1 ? 'active' : ''}`}
+                  className={`rating-btn thumbs-up ${post.rating === 1 ? 'active' : post.rating === -1 ? 'inactive' : ''}`}
                   onClick={() => updateRating(post.id, 1)}
-                  style={{ color: post.rating === 1 ? getRatingColor(1) : undefined }}
                 >
                   👍
                 </button>
-                <span className="rating-display">
-                  {post.rating === 1 ? '👍' : post.rating === -1 ? '👎' : '—'}
-                </span>
                 <button
-                  className={`rating-btn thumbs-down ${post.rating === -1 ? 'active' : ''}`}
+                  className={`rating-btn thumbs-down ${post.rating === -1 ? 'active' : post.rating === 1 ? 'inactive' : ''}`}
                   onClick={() => updateRating(post.id, -1)}
-                  style={{ color: post.rating === -1 ? getRatingColor(-1) : undefined }}
                 >
                   👎
                 </button>

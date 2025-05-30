@@ -35,8 +35,4 @@
 [] ability to mark a post as viewed (eg inbox 0 it)
 [x] ngrok tunnel to view from phone (is there a JS package i can just include?)
 [x] try headless
-[] try getting link to post working
-[] onboarding ux
-  [] ensure gemini API key is present
-  [] do an initial scroll and open the home page
 

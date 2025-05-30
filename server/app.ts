@@ -82,8 +82,13 @@ export async function createApp() {
       const { postId } = req.params
       const { rating } = req.body
 
-      if (typeof rating !== 'number' || (rating !== 1 && rating !== -1)) {
-        return res.status(400).json({ error: 'Rating must be 1 (thumbs up) or -1 (thumbs down)' })
+      if (
+        rating &&
+        (typeof rating !== 'number' || (rating !== 1 && rating !== -1 && rating !== 0))
+      ) {
+        return res
+          .status(400)
+          .json({ error: `Rating must be 1 (thumbs up) or -1 (thumbs down) rating = ${rating}` })
       }
 
       const success = postDB.updateRating(postId, rating)
