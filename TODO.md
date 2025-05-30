@@ -27,7 +27,8 @@
 [x] allow runnning dev on a specific dir to look at prior browses
 [x] need to change tabs in browser when starting to read that one
 [x] clean up ui a bit
-[] have linkedin scroll so top of target node is at 60px from top
+[x] have linkedin scroll so top of target node is at 60px from top
+[] handle images
 [] use the likes and dislikes in filtering
 [] change prompt and category def to have "things I want in this category" and things I don't want
 [] ability to mark a post as viewed (eg inbox 0 it)

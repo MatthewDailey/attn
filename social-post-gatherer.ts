@@ -262,13 +262,24 @@ async function capturePostScreenshots(
           el.scrollIntoView({ behavior: 'smooth', block: 'center' })
         })
 
+        // Ensure the element is at least 50px from the top of the screen
+        await postElement.evaluate((el) => {
+          const rect = el.getBoundingClientRect()
+          const minTopOffset = 50
+
+          if (rect.top < minTopOffset) {
+            const scrollAdjustment = minTopOffset - rect.top
+            window.scrollBy(0, -scrollAdjustment)
+          }
+        })
+
         await new Promise((resolve) => setTimeout(resolve, 500))
 
         // Expand content if supported
-        if (config.expandContent) {
-          await config.expandContent(postElement)
-          await new Promise((resolve) => setTimeout(resolve, 1000))
-        }
+        // if (config.expandContent) {
+        //   await config.expandContent(postElement)
+        //   await new Promise((resolve) => setTimeout(resolve, 1000))
+        // }
 
         // Take screenshot
         const filename = `${platform}_${screenshotCount + 1}_${platformUniqueId}.png`
